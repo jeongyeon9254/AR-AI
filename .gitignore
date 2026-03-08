@@ -1,0 +1,9 @@
+node_modules/
+out/
+dist/
+.env
+*.db
+
+# skills.sh (외부 스킬 - 로컬 설치)
+.agents/
+skills-lock.json
