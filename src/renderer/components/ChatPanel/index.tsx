@@ -59,7 +59,16 @@ const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
             </div>
             <div className="chat-markdown text-sm leading-relaxed pt-1 min-w-0"
               style={{ color: 'var(--text-primary)' }}>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ href, children }) => (
+                    <a href={href} onClick={(e) => { e.preventDefault(); if (href) window.open(href, '_blank') }} style={{ color: 'var(--accent)', cursor: 'pointer' }}>
+                      {children}
+                    </a>
+                  )
+                }}
+              >{msg.content}</ReactMarkdown>
             </div>
           </div>
         )}
