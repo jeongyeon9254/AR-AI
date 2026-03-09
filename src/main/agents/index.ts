@@ -1,5 +1,5 @@
 import { BrowserWindow, shell } from 'electron'
-import { execSync } from 'child_process'
+import { execSync, spawn } from 'child_process'
 import { join } from 'path'
 import { existsSync, mkdirSync, rmSync } from 'fs'
 import { app } from 'electron'
@@ -212,10 +212,79 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   const cleanEnv = { ...process.env, CLAUDE_AGENT_SDK_CLIENT_APP: 'ar-ai/0.1.0' }
   delete cleanEnv.CLAUDECODE
 
+  // 패키징된 Electron 앱은 로그인 셸 프로필(nvm 등)을 로드하지 않아
+  // node가 PATH에 없을 수 있으므로 로그인 셸에서 PATH를 가져와 보장
+  try {
+    const shellPath = execSync('zsh -ilc "echo $PATH" 2>/dev/null || bash -ilc "echo $PATH" 2>/dev/null', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 5000
+    }).trim()
+    if (shellPath) {
+      cleanEnv.PATH = shellPath
+    }
+  } catch {
+    const fallbackPaths = ['/usr/local/bin', '/opt/homebrew/bin']
+    cleanEnv.PATH = [...fallbackPaths, cleanEnv.PATH || ''].join(':')
+  }
+
+  // 패키징된 앱에서 cli.js는 app.asar.unpacked에 위치
+  const cliPath = join(
+    app.getAppPath().replace('app.asar', 'app.asar.unpacked'),
+    'node_modules',
+    '@anthropic-ai',
+    'claude-agent-sdk',
+    'cli.js'
+  )
+
+  // node 절대 경로 확보 — Electron 앱에서 spawn 시 PATH 문제 우회
+  let nodeBin = 'node'
+  try {
+    nodeBin = execSync('zsh -ilc "which node" 2>/dev/null || bash -ilc "which node" 2>/dev/null', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 5000
+    }).trim()
+  } catch {
+    // fallback: 일반적인 node 설치 경로에서 찾기
+    for (const p of ['/usr/local/bin/node', '/opt/homebrew/bin/node']) {
+      if (existsSync(p)) { nodeBin = p; break }
+    }
+  }
+  console.log('[AR-AI] Node binary:', nodeBin)
+  console.log('[AR-AI] CLI path:', cliPath, 'exists:', existsSync(cliPath))
+
   // SDK 세션 resume으로 대화 연속성 유지
   const existingSdkSession = sdkSessionMap.get(agentType)
 
   const queryOptions: any = {
+    pathToClaudeCodeExecutable: cliPath,
+    // spawnClaudeCodeProcess: node 절대 경로로 직접 spawn하여 PATH 문제 우회
+    spawnClaudeCodeProcess: (spawnOpts: { command: string; args: string[]; cwd?: string; env: Record<string, string | undefined>; signal: AbortSignal }) => {
+      // SDK가 command='node', args=['cli.js', ...flags]로 전달함
+      // command를 node 절대 경로로 교체
+      const cmd = spawnOpts.command === 'node' ? nodeBin : spawnOpts.command
+      const child = spawn(cmd, spawnOpts.args, {
+        cwd: spawnOpts.cwd,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: spawnOpts.env as NodeJS.ProcessEnv,
+        signal: spawnOpts.signal,
+        windowsHide: true
+      })
+      child.stderr?.on('data', (data: Buffer) => {
+        console.log('[AR-AI SDK stderr]', data.toString())
+      })
+      return {
+        stdin: child.stdin,
+        stdout: child.stdout,
+        get killed() { return child.killed },
+        get exitCode() { return child.exitCode },
+        kill: (signal: NodeJS.Signals) => child.kill(signal),
+        on: child.on.bind(child) as any,
+        once: child.once.bind(child) as any,
+        off: child.off.bind(child) as any
+      }
+    },
     permissionMode: 'bypassPermissions',
     allowDangerouslySkipPermissions: true,
     allowedTools: ['Read', 'Edit', 'Glob', 'Grep', 'Bash', 'Write', 'Agent'],
