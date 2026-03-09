@@ -1,22 +1,10 @@
-import { useState, useEffect, useRef, memo, useCallback } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
 import type { ChatMessage } from '../../stores/useSessionStore'
 import { useUIStore } from '../../stores/useUIStore'
 import { useSettingsStore } from '../../stores/useSettingsStore'
-
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/```[\s\S]*?```/g, (m) => m.slice(m.indexOf('\n') + 1, m.lastIndexOf('```')).trim())
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/__(.+?)__/g, '$1')
-    .replace(/~~(.+?)~~/g, '$1')
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/^\s*[-*+]\s+/gm, '• ')
-    .replace(/^\s*\d+\.\s+/gm, (m) => m.trim() + ' ')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-}
 
 function formatDateLabel(dateStr: string): string {
   const date = new Date(dateStr)
@@ -69,9 +57,9 @@ const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
               style={{ background: 'var(--accent)', color: '#fff' }}>
               {agentIcon}
             </div>
-            <div className="text-sm leading-relaxed pt-1 whitespace-pre-wrap min-w-0"
+            <div className="chat-markdown text-sm leading-relaxed pt-1 min-w-0"
               style={{ color: 'var(--text-primary)' }}>
-              {stripMarkdown(msg.content)}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
             </div>
           </div>
         )}
