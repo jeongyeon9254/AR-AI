@@ -78,14 +78,20 @@ function createOAuth2Client(): InstanceType<typeof google.auth.OAuth2> {
   return new google.auth.OAuth2(creds.client_id, creds.client_secret, REDIRECT_URI)
 }
 
-/** Google Chat 메시지 링크 생성 */
-function buildMessageLink(messageName?: string): string | null {
+/** Google Chat 메시지 링크 생성 (스레드 댓글창이 열리도록) */
+function buildMessageLink(messageName?: string, threadId?: string): string | null {
   if (!messageName) return null
   // messageName: "spaces/AAQAl9Ef9UA/messages/xxxxxx"
   const parts = messageName.split('/')
   if (parts.length >= 4) {
     const spaceId = parts[1]
     const messageId = parts[3]
+    // threadId: "spaces/AAQAl9Ef9UA/threads/yyyyyy"
+    const threadParts = threadId?.split('/')
+    const threadKey = threadParts && threadParts.length >= 4 ? threadParts[3] : undefined
+    if (threadKey) {
+      return `https://chat.google.com/room/${spaceId}/${threadKey}/${messageId}`
+    }
     return `https://chat.google.com/room/${spaceId}/${messageId}`
   }
   return null
@@ -387,7 +393,7 @@ export function formatMessagesForAnalysis(messages: ChatMessage[]): string {
       lines.push(`#### 스레드 ${threadIdx} (${msgs.length}개 메시지)`)
       for (const msg of msgs) {
         const time = new Date(msg.createTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
-        const link = buildMessageLink(msg.messageName)
+        const link = buildMessageLink(msg.messageName, msg.threadId)
         lines.push(`- **${msg.sender}** (${time}): ${msg.text}${link ? ` [링크](${link})` : ''}`)
       }
       lines.push('')
@@ -400,7 +406,7 @@ export function formatMessagesForAnalysis(messages: ChatMessage[]): string {
     lines.push(`### 개별 메시지 (${noThread.length}개)\n`)
     for (const msg of noThread) {
       const time = new Date(msg.createTime).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
-      const link = buildMessageLink(msg.messageName)
+      const link = buildMessageLink(msg.messageName, msg.threadId)
       lines.push(`- **${msg.sender}** (${time}): ${msg.text}${link ? ` [링크](${link})` : ''}`)
     }
   }

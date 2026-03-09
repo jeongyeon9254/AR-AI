@@ -682,6 +682,14 @@ function extractSpaceName(message: string, defaultSpace: string): string {
   return defaultSpace
 }
 
+/** Date를 로컬 타임존 기준 YYYY-MM-DD로 변환 (toISOString은 UTC라 KST에서 하루 밀림) */
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 /** 사용자 메시지에서 날짜를 파싱합니다 */
 function parseDateFromMessage(message: string): { startDate: string; endDate: string } {
   const now = new Date()
@@ -721,14 +729,12 @@ function parseDateFromMessage(message: string): { startDate: string; endDate: st
   if (/어제/.test(message)) {
     const yesterday = new Date(now)
     yesterday.setDate(yesterday.getDate() - 1)
-    const date = yesterday.toISOString().split('T')[0]
-    return { startDate: date, endDate: date }
+    return { startDate: toLocalDateString(yesterday), endDate: toLocalDateString(yesterday) }
   }
 
   // "오늘"
   if (/오늘/.test(message)) {
-    const date = now.toISOString().split('T')[0]
-    return { startDate: date, endDate: date }
+    return { startDate: toLocalDateString(now), endDate: toLocalDateString(now) }
   }
 
   // "이번주"
@@ -736,8 +742,8 @@ function parseDateFromMessage(message: string): { startDate: string; endDate: st
     const monday = new Date(now)
     monday.setDate(monday.getDate() - monday.getDay() + 1)
     return {
-      startDate: monday.toISOString().split('T')[0],
-      endDate: now.toISOString().split('T')[0]
+      startDate: toLocalDateString(monday),
+      endDate: toLocalDateString(now)
     }
   }
 
@@ -747,8 +753,8 @@ function parseDateFromMessage(message: string): { startDate: string; endDate: st
     const daysAgo = new Date(now)
     daysAgo.setDate(daysAgo.getDate() - parseInt(lastNDays[1]))
     return {
-      startDate: daysAgo.toISOString().split('T')[0],
-      endDate: now.toISOString().split('T')[0]
+      startDate: toLocalDateString(daysAgo),
+      endDate: toLocalDateString(now)
     }
   }
 
@@ -756,7 +762,7 @@ function parseDateFromMessage(message: string): { startDate: string; endDate: st
   const yesterday = new Date(now)
   yesterday.setDate(yesterday.getDate() - 1)
   return {
-    startDate: yesterday.toISOString().split('T')[0],
-    endDate: now.toISOString().split('T')[0]
+    startDate: toLocalDateString(yesterday),
+    endDate: toLocalDateString(now)
   }
 }
