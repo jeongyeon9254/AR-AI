@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import { join } from 'path'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { writeFile, mkdir } from 'fs/promises'
 import { loadBuiltinSkills, scanExternalSkills } from './skills'
 
 export interface McpServerConfig {
@@ -163,12 +164,32 @@ function getSettingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
 }
 
+// settings 캐시 — readFileSync 반복 방지
+let _settingsCache: AppSettings | null = null
+let _settingsMtime: number = 0
+
+/** settings 캐시 무효화 (설정 업데이트 시 호출) */
+export function invalidateSettingsCache(): void {
+  _settingsCache = null
+}
+
 export function getSettings(): AppSettings {
   const defaults = getDefaultSettings()
   const settingsPath = getSettingsPath()
   if (!existsSync(settingsPath)) {
     return { ...defaults }
   }
+
+  // 파일 mtime 기반 캐시 — 변경 없으면 파싱 스킵
+  try {
+    const { statSync } = require('fs')
+    const mtime = statSync(settingsPath).mtimeMs
+    if (_settingsCache && mtime === _settingsMtime) {
+      return _settingsCache
+    }
+    _settingsMtime = mtime
+  } catch { /* stat 실패 시 캐시 무시 */ }
+
   try {
     const raw = readFileSync(settingsPath, 'utf-8')
     const parsed = JSON.parse(raw)
@@ -217,7 +238,7 @@ export function getSettings(): AppSettings {
       }
     }
 
-    return {
+    const result = {
       ...defaults,
       ...parsed,
       mcpServers: { ...defaultMcpServers, ...userMcpServers, ...serenaServers },
@@ -225,6 +246,8 @@ export function getSettings(): AppSettings {
       skills: mergedSkills,
       agentSkillAssignments: parsed.agentSkillAssignments || {}
     }
+    _settingsCache = result
+    return result
   } catch {
     return { ...defaults }
   }
@@ -234,10 +257,28 @@ export function updateSettings(partial: Partial<AppSettings>): AppSettings {
   const current = getSettings()
   const updated = { ...current, ...partial }
   writeFileSync(getSettingsPath(), JSON.stringify(updated, null, 2))
+  invalidateSettingsCache()
   return updated
 }
 
-/** 스킬 파일을 ~/.claude/commands/ 에 동기화 */
+/** 스킬 파일을 ~/.claude/commands/ 에 동기화 (비동기 — Main Process 블로킹 방지) */
+export async function syncSkillFilesAsync(): Promise<void> {
+  const settings = getSettings()
+  const homeDir = app.getPath('home')
+  const commandsDir = join(homeDir, '.claude', 'commands')
+
+  if (!existsSync(commandsDir)) {
+    await mkdir(commandsDir, { recursive: true })
+  }
+
+  await Promise.all(
+    settings.skills
+      .filter((skill) => skill.enabled)
+      .map((skill) => writeFile(join(commandsDir, `${skill.name}.md`), skill.content, 'utf-8'))
+  )
+}
+
+/** @deprecated 동기 버전 — 초기화 등 동기 컨텍스트에서만 사용 */
 export function syncSkillFiles(): void {
   const settings = getSettings()
   const homeDir = app.getPath('home')

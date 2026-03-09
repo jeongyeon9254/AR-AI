@@ -1,10 +1,13 @@
 import { BrowserWindow, shell } from 'electron'
-import { execSync, spawn } from 'child_process'
+import { spawn, exec } from 'child_process'
 import { join } from 'path'
 import { existsSync, mkdirSync, rmSync } from 'fs'
+import { promisify } from 'util'
+
+const execAsync = promisify(exec)
 import { app } from 'electron'
 import { AGENT_DEFINITIONS, ORCHESTRATOR_SYSTEM_PROMPT, SUB_AGENTS } from './definitions'
-import { getSettings, syncSkillFiles } from '../config'
+import { getSettings, syncSkillFilesAsync } from '../config'
 import { getContextBoard } from '../context-board'
 import { SessionManager } from '../sessions'
 import { collectIssues, formatMessagesForAnalysis } from '../tools/google-chat'
@@ -19,6 +22,10 @@ function getSessionManager(): SessionManager | null {
 
 // 에이전트별 SDK 세션 ID 관리 (대화 연속성)
 const sdkSessionMap = new Map<string, string>()
+
+// 셸 환경 캐시 — 첫 호출 시 비동기 초기화 후 재사용
+let _cachedShellPath: string | null = null
+let _cachedNodeBin: string | null = null
 
 /** 특정 에이전트의 SDK 세션을 리셋합니다 (새 대화 시작) */
 export function resetSdkSession(agentType: string): void {
@@ -48,22 +55,22 @@ interface WorktreeInfo {
 
 const WORKTREE_BASE_DIR = join(app.getPath('temp'), 'ar-ai-worktrees')
 
-/** 레포지토리의 main 브랜치를 가리키는 worktree를 생성합니다 */
-function createMainWorktree(repoPath: string, label: string): WorktreeInfo | null {
+/** 레포지토리의 main 브랜치를 가리키는 worktree를 비동기로 생성합니다 */
+async function createMainWorktreeAsync(repoPath: string, label: string): Promise<WorktreeInfo | null> {
   try {
     // git 레포인지 확인
-    execSync('git rev-parse --git-dir', { cwd: repoPath, stdio: 'pipe' })
+    await execAsync('git rev-parse --git-dir', { cwd: repoPath })
 
     // fetch로 원격 최신화
-    execSync('git fetch origin', { cwd: repoPath, stdio: 'pipe', timeout: 30000 })
+    await execAsync('git fetch origin', { cwd: repoPath, timeout: 30000 })
 
     // main 브랜치 존재 확인 (main 또는 master)
     let mainBranch = 'main'
     try {
-      execSync('git rev-parse --verify origin/main', { cwd: repoPath, stdio: 'pipe' })
+      await execAsync('git rev-parse --verify origin/main', { cwd: repoPath })
     } catch {
       try {
-        execSync('git rev-parse --verify origin/master', { cwd: repoPath, stdio: 'pipe' })
+        await execAsync('git rev-parse --verify origin/master', { cwd: repoPath })
         mainBranch = 'master'
       } catch {
         console.warn(`[Worktree] ${label}: main/master 브랜치를 찾을 수 없습니다`)
@@ -76,7 +83,7 @@ function createMainWorktree(repoPath: string, label: string): WorktreeInfo | nul
     // 기존 worktree가 있으면 제거
     if (existsSync(worktreePath)) {
       try {
-        execSync(`git worktree remove "${worktreePath}" --force`, { cwd: repoPath, stdio: 'pipe' })
+        await execAsync(`git worktree remove "${worktreePath}" --force`, { cwd: repoPath })
       } catch {
         rmSync(worktreePath, { recursive: true, force: true })
       }
@@ -86,13 +93,13 @@ function createMainWorktree(repoPath: string, label: string): WorktreeInfo | nul
     mkdirSync(WORKTREE_BASE_DIR, { recursive: true })
 
     // detached HEAD로 worktree 생성 (브랜치 충돌 방지)
-    execSync(`git worktree add --detach "${worktreePath}" origin/${mainBranch}`, {
+    await execAsync(`git worktree add --detach "${worktreePath}" origin/${mainBranch}`, {
       cwd: repoPath,
-      stdio: 'pipe',
       timeout: 30000
     })
 
-    const commitHash = execSync('git rev-parse --short HEAD', { cwd: worktreePath, encoding: 'utf-8' }).trim()
+    const { stdout } = await execAsync('git rev-parse --short HEAD', { cwd: worktreePath })
+    const commitHash = stdout.trim()
     console.log(`[Worktree] ${label}: origin/${mainBranch} (${commitHash}) → ${worktreePath}`)
 
     return { originalPath: repoPath, worktreePath, label }
@@ -102,37 +109,35 @@ function createMainWorktree(repoPath: string, label: string): WorktreeInfo | nul
   }
 }
 
-/** 생성한 worktree들을 정리합니다 */
-function cleanupWorktrees(worktrees: WorktreeInfo[]): void {
-  for (const wt of worktrees) {
+/** 생성한 worktree들을 비동기로 정리합니다 */
+async function cleanupWorktreesAsync(worktrees: WorktreeInfo[]): Promise<void> {
+  await Promise.all(worktrees.map(async (wt) => {
     try {
-      execSync(`git worktree remove "${wt.worktreePath}" --force`, {
-        cwd: wt.originalPath,
-        stdio: 'pipe'
+      await execAsync(`git worktree remove "${wt.worktreePath}" --force`, {
+        cwd: wt.originalPath
       })
       console.log(`[Worktree] ${wt.label}: 정리 완료`)
     } catch {
-      // force 삭제
       try {
         rmSync(wt.worktreePath, { recursive: true, force: true })
-        execSync('git worktree prune', { cwd: wt.originalPath, stdio: 'pipe' })
+        await execAsync('git worktree prune', { cwd: wt.originalPath })
       } catch {
         console.warn(`[Worktree] ${wt.label}: 정리 실패 (수동 삭제 필요)`)
       }
     }
-  }
+  }))
 }
 
 /**
  * policy-expert용: 각 레포의 main worktree를 생성하고
  * worktree 경로로 대체된 cwd/additionalDirectories를 반환합니다.
  */
-function buildPolicyWorktrees(): {
+async function buildPolicyWorktreesAsync(): Promise<{
   worktrees: WorktreeInfo[]
   cwd: string | undefined
   additionalDirectories: string[]
   worktreeContext: string
-} {
+}> {
   const s = getSettings()
   const repos: { path: string; label: string }[] = []
   if (s.coreFrontPath) repos.push({ path: s.coreFrontPath, label: 'core-front' })
@@ -140,21 +145,29 @@ function buildPolicyWorktrees(): {
   if (s.writePagePath) repos.push({ path: s.writePagePath, label: 'write-page' })
   if (s.widgetScriptPath) repos.push({ path: s.widgetScriptPath, label: 'widget-script' })
 
+  // 병렬로 worktree 생성
+  const results = await Promise.all(
+    repos.map((repo) => createMainWorktreeAsync(repo.path, repo.label))
+  )
+
   const worktrees: WorktreeInfo[] = []
   const dirs: string[] = []
   const contextLines: string[] = []
 
-  for (const repo of repos) {
-    const wt = createMainWorktree(repo.path, repo.label)
+  for (let i = 0; i < repos.length; i++) {
+    const wt = results[i]
     if (wt) {
       worktrees.push(wt)
       dirs.push(wt.worktreePath)
-      const commitHash = execSync('git rev-parse --short HEAD', { cwd: wt.worktreePath, encoding: 'utf-8' }).trim()
-      contextLines.push(`- ${wt.label}: ${wt.worktreePath} (main@${commitHash})`)
+      try {
+        const { stdout } = await execAsync('git rev-parse --short HEAD', { cwd: wt.worktreePath })
+        contextLines.push(`- ${wt.label}: ${wt.worktreePath} (main@${stdout.trim()})`)
+      } catch {
+        contextLines.push(`- ${wt.label}: ${wt.worktreePath}`)
+      }
     } else {
-      // worktree 실패 시 원본 경로 사용
-      dirs.push(repo.path)
-      contextLines.push(`- ${repo.label}: ${repo.path} (원본 경로, worktree 생성 실패)`)
+      dirs.push(repos[i].path)
+      contextLines.push(`- ${repos[i].label}: ${repos[i].path} (원본 경로, worktree 생성 실패)`)
     }
   }
 
@@ -201,7 +214,7 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   const agentDef = AGENT_DEFINITIONS[agentType]
 
   // 분석 전용 에이전트는 main worktree를 사용하여 다른 에이전트 작업과 독립
-  const WORKTREE_AGENTS = ['policy-expert', 'issue-collector', 'po', 'qa-expert']
+  const WORKTREE_AGENTS = ['issue-collector']
   const usesWorktree = WORKTREE_AGENTS.includes(agentType)
   let activeWorktrees: WorktreeInfo[] = []
   let worktreeContext = ''
@@ -210,7 +223,7 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   let additionalDirectories: string[]
 
   if (usesWorktree) {
-    const wt = buildPolicyWorktrees()
+    const wt = await buildPolicyWorktreesAsync()
     activeWorktrees = wt.worktrees
     cwd = wt.cwd
     additionalDirectories = wt.additionalDirectories
@@ -223,21 +236,19 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   const cleanEnv = { ...process.env, CLAUDE_AGENT_SDK_CLIENT_APP: 'ar-ai/0.1.0' }
   delete cleanEnv.CLAUDECODE
 
-  // 패키징된 Electron 앱은 로그인 셸 프로필(nvm 등)을 로드하지 않아
-  // node가 PATH에 없을 수 있으므로 로그인 셸에서 PATH를 가져와 보장
-  try {
-    const shellPath = execSync('zsh -ilc "echo $PATH" 2>/dev/null || bash -ilc "echo $PATH" 2>/dev/null', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 5000
-    }).trim()
-    if (shellPath) {
-      cleanEnv.PATH = shellPath
+  // 셸 PATH 캐싱 — 비동기로 초기화
+  if (_cachedShellPath === null) {
+    try {
+      const { stdout } = await execAsync('zsh -ilc "echo $PATH" 2>/dev/null || bash -ilc "echo $PATH" 2>/dev/null', {
+        timeout: 5000
+      })
+      _cachedShellPath = stdout.trim()
+    } catch {
+      const fallbackPaths = ['/usr/local/bin', '/opt/homebrew/bin']
+      _cachedShellPath = [...fallbackPaths, process.env.PATH || ''].join(':')
     }
-  } catch {
-    const fallbackPaths = ['/usr/local/bin', '/opt/homebrew/bin']
-    cleanEnv.PATH = [...fallbackPaths, cleanEnv.PATH || ''].join(':')
   }
+  cleanEnv.PATH = _cachedShellPath
 
   // 패키징된 앱에서 cli.js는 app.asar.unpacked에 위치
   const cliPath = join(
@@ -248,21 +259,22 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     'cli.js'
   )
 
-  // node 절대 경로 확보 — Electron 앱에서 spawn 시 PATH 문제 우회
-  let nodeBin = 'node'
-  try {
-    nodeBin = execSync('zsh -ilc "which node" 2>/dev/null || bash -ilc "which node" 2>/dev/null', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 5000
-    }).trim()
-  } catch {
-    // fallback: 일반적인 node 설치 경로에서 찾기
-    for (const p of ['/usr/local/bin/node', '/opt/homebrew/bin/node']) {
-      if (existsSync(p)) { nodeBin = p; break }
+  // node 절대 경로 캐싱 — 비동기로 초기화
+  if (_cachedNodeBin === null) {
+    try {
+      const { stdout } = await execAsync('zsh -ilc "which node" 2>/dev/null || bash -ilc "which node" 2>/dev/null', {
+        timeout: 5000
+      })
+      _cachedNodeBin = stdout.trim()
+    } catch {
+      _cachedNodeBin = 'node'
+      for (const p of ['/usr/local/bin/node', '/opt/homebrew/bin/node']) {
+        if (existsSync(p)) { _cachedNodeBin = p; break }
+      }
     }
+    console.log('[AR-AI] Node binary:', _cachedNodeBin)
   }
-  console.log('[AR-AI] Node binary:', nodeBin)
+  const nodeBin = _cachedNodeBin
   console.log('[AR-AI] CLI path:', cliPath, 'exists:', existsSync(cliPath))
 
   // SDK 세션 resume으로 대화 연속성 유지
@@ -344,7 +356,7 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
 여러 개를 동시에 사용할 수 있습니다. 필요할 때만 사용하세요.`
 
   // 스킬 파일 동기화 + 설정 로드
-  syncSkillFiles()
+  await syncSkillFilesAsync()
   const settings = getSettings()
   const assignedMcpNames = settings.agentMcpAssignments[agentType] || []
   const mcpServersConfig: Record<string, { command: string; args: string[] }> = {}
@@ -482,9 +494,11 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     }
   }
 
-  // worktree 정리
+  // worktree 정리 (비동기, fire-and-forget — 응답 지연 방지)
   if (activeWorktrees.length > 0) {
-    cleanupWorktrees(activeWorktrees)
+    cleanupWorktreesAsync(activeWorktrees).catch((err) =>
+      console.warn('[Worktree] 정리 중 오류:', err)
+    )
   }
 
   const finalContent = fullContent || '응답이 없습니다.'
