@@ -70,9 +70,9 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   // Chat - Claude Agent SDK 연동
   ipcMain.handle('chat:send', async (_event, sessionId: string, message: string) => {
     try {
-      // 세션 정보 조회하여 에이전트 타입 확인
-      const sessionData = sessionManager.get(sessionId)
-      if (!sessionData) {
+      // 세션 메타데이터만 조회 (메시지 로드 없이 — UI 블로킹 방지)
+      const session = sessionManager.getSession(sessionId)
+      if (!session) {
         return { success: false, error: 'Session not found' }
       }
 
@@ -88,7 +88,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
       // 에이전트 비동기 실행 (응답을 기다리지 않고 스트리밍)
       runAgent({
         sessionId,
-        agentType: sessionData.session.agentType,
+        agentType: session.agentType,
         message,
         mainWindow,
         abortSignal: abortController.signal

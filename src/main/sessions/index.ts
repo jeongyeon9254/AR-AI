@@ -97,6 +97,11 @@ export class SessionManager {
     return { session, messages }
   }
 
+  /** 세션 메타데이터만 조회 (메시지 로드 없이) */
+  getSession(id: string): Session | null {
+    return (this.db.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as Session) || null
+  }
+
   delete(id: string): boolean {
     const result = this.db.prepare('DELETE FROM sessions WHERE id = ?').run(id)
     return result.changes > 0

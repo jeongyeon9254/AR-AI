@@ -110,7 +110,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       loadingAgents: new Set([...state.loadingAgents, activeAgentType])
     }))
 
-    await window.electronAPI.sendMessage(sessionId, content)
+    // IPC를 fire-and-forget으로 처리 — UI 블로킹 방지
+    window.electronAPI.sendMessage(sessionId, content).catch((err) => {
+      console.error('[sendMessage] IPC error:', err)
+    })
   },
 
   abortAgent: async () => {

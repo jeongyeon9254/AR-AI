@@ -571,17 +571,20 @@ async function preprocessIssueCollectorMessage(
     /이슈\s*분석/,
     /이슈\s*리포트/,
     /이슈\s*확인/,
+    /이슈\s*모[아으]/,
     /채팅?\s*분석/,
     /대화\s*분석/,
     /구글\s*챗/,
-    /google\s*chat/i
+    /google\s*chat/i,
+    /chat\.google\.com/
   ]
 
   const isTrackingRequest = trackingPatterns.some((p) => p.test(message))
   if (!isTrackingRequest) return message
 
   const settings = getSettings()
-  const spaceName = settings.googleChatDefaultSpace
+  // 메시지에서 스페이스 URL/ID 추출, 없으면 기본 설정 사용
+  const spaceName = extractSpaceName(message, settings.googleChatDefaultSpace)
   if (!spaceName) {
     return message + '\n\n[시스템] Google Chat 기본 스페이스가 설정되지 않았습니다. 설정에서 기본 스페이스를 등록해주세요.'
   }
@@ -625,6 +628,19 @@ ${analysisContext}
     const errMsg = error instanceof Error ? error.message : String(error)
     return message + `\n\n[시스템] Google Chat 메시지 수집 중 오류가 발생했습니다: ${errMsg}`
   }
+}
+
+/** Google Chat URL 또는 스페이스 ID에서 spaces/XXX 형식을 추출합니다 */
+function extractSpaceName(message: string, defaultSpace: string): string {
+  // URL 형식: https://chat.google.com/room/AAQAm5mNpMk 또는 /app/chat/AAQAm5mNpMk
+  const urlMatch = message.match(/chat\.google\.com\/(?:room|app\/chat)\/([A-Za-z0-9_-]+)/)
+  if (urlMatch) return `spaces/${urlMatch[1]}`
+
+  // spaces/XXX 형식이 직접 포함된 경우
+  const spaceMatch = message.match(/spaces\/([A-Za-z0-9_-]+)/)
+  if (spaceMatch) return `spaces/${spaceMatch[1]}`
+
+  return defaultSpace
 }
 
 /** 사용자 메시지에서 날짜를 파싱합니다 */

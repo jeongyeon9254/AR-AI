@@ -100,12 +100,12 @@ export function ChatPanel(): JSX.Element {
     textareaRef.current?.focus()
   }, [activeAgentType])
 
-  const handleSend = async (): Promise<void> => {
+  const handleSend = (): void => {
     if (!input.trim() || !activeAgentType) return
     const msg = input
     setInput('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
-    await sendMessage(msg)
+    sendMessage(msg)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent): void => {
