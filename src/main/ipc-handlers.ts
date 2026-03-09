@@ -3,7 +3,7 @@ import { SessionManager } from './sessions'
 import { getSettings, updateSettings, validateWorkspace } from './config'
 import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync, watch, FSWatcher } from 'fs'
 import { join, basename } from 'path'
-import { runAgent, setAgentSessionManager } from './agents'
+import { runAgent, setAgentSessionManager, resetSdkSession } from './agents'
 import {
   collectIssues, formatIssueReport, formatMessagesForAnalysis,
   startOAuthFlow, getAuthStatus, clearAuth,
@@ -151,6 +151,9 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('storage:clear-messages', (_event, sessionId: string) => {
+    // SDK 세션도 리셋하여 이전 대화 컨텍스트 제거
+    const session = sessionManager.getSession(sessionId)
+    if (session) resetSdkSession(session.agentType)
     const deleted = sessionManager.clearMessages(sessionId)
     sessionManager.vacuum()
     return { deleted }

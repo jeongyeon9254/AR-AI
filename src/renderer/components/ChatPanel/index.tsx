@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo, useCallback } from 'react'
 import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
+import type { ChatMessage } from '../../stores/useSessionStore'
 import { useUIStore } from '../../stores/useUIStore'
 import { useSettingsStore } from '../../stores/useSettingsStore'
 
@@ -53,24 +54,56 @@ function DateDivider({ label }: { label: string }): JSX.Element {
   )
 }
 
+const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
+  msg: ChatMessage
+  agentIcon?: string
+  showDate: boolean
+}): JSX.Element {
+  return (
+    <div>
+      {showDate && <DateDivider label={formatDateLabel(msg.createdAt)} />}
+      <div className={msg.role === 'user' ? 'flex justify-end' : ''}>
+        {msg.role === 'assistant' && (
+          <div className="flex gap-3 items-start">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
+              style={{ background: 'var(--accent)', color: '#fff' }}>
+              {agentIcon}
+            </div>
+            <div className="text-sm leading-relaxed pt-1 whitespace-pre-wrap min-w-0"
+              style={{ color: 'var(--text-primary)' }}>
+              {stripMarkdown(msg.content)}
+            </div>
+          </div>
+        )}
+        {msg.role === 'user' && (
+          <div className="inline-block px-4 py-2.5 rounded-2xl text-sm max-w-[80%]"
+            style={{ background: 'var(--bg-user-msg)', color: 'var(--text-primary)' }}>
+            {msg.content}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+})
+
 export function ChatPanel(): JSX.Element {
   const [input, setInput] = useState('')
   const [authStatus, setAuthStatus] = useState<{ isAuthenticating: boolean; message: string } | null>(null)
-  const {
-    activeAgentType,
-    messages,
-    loadingAgents,
-    sendMessage,
-    abortAgent,
-    addStreamChunk
-  } = useSessionStore()
+  const activeAgentType = useSessionStore((s) => s.activeAgentType)
+  const messages = useSessionStore((s) => s.messages)
+  const sendMessage = useSessionStore((s) => s.sendMessage)
+  const abortAgent = useSessionStore((s) => s.abortAgent)
+  const addStreamChunk = useSessionStore((s) => s.addStreamChunk)
+  // 현재 에이전트의 로딩 상태만 구독 (boolean 값)
+  const isLoading = useSessionStore((s) =>
+    s.activeAgentType ? !!s.loadingAgents[s.activeAgentType] : false
+  )
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const { toggleTodo, todoOpen } = useUIStore()
   const { workspaceStatus, validateWorkspace } = useSettingsStore()
   const agentInfo = AGENT_TYPES.find((a) => a.id === activeAgentType)
-  const isLoading = activeAgentType ? loadingAgents.has(activeAgentType) : false
 
   useEffect(() => {
     validateWorkspace()
@@ -198,31 +231,13 @@ export function ChatPanel(): JSX.Element {
           {messages.map((msg, idx) => {
             const prevMsg = messages[idx - 1]
             const showDate = !prevMsg || getDateKey(msg.createdAt) !== getDateKey(prevMsg.createdAt)
-
             return (
-              <div key={msg.id}>
-                {showDate && <DateDivider label={formatDateLabel(msg.createdAt)} />}
-                <div className={msg.role === 'user' ? 'flex justify-end' : ''}>
-                  {msg.role === 'assistant' && (
-                    <div className="flex gap-3 items-start">
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
-                        style={{ background: 'var(--accent)', color: '#fff' }}>
-                        {agentInfo?.icon}
-                      </div>
-                      <div className="text-sm leading-relaxed pt-1 whitespace-pre-wrap min-w-0"
-                        style={{ color: 'var(--text-primary)' }}>
-                        {stripMarkdown(msg.content)}
-                      </div>
-                    </div>
-                  )}
-                  {msg.role === 'user' && (
-                    <div className="inline-block px-4 py-2.5 rounded-2xl text-sm max-w-[80%]"
-                      style={{ background: 'var(--bg-user-msg)', color: 'var(--text-primary)' }}>
-                      {msg.content}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <MessageItem
+                key={msg.id}
+                msg={msg}
+                agentIcon={agentInfo?.icon}
+                showDate={showDate}
+              />
             )
           })}
 

@@ -50,7 +50,7 @@ export function Sidebar(): JSX.Element {
         </p>
         {AGENT_TYPES.map((agent) => {
           const isActive = activeAgentType === agent.id && viewMode === 'chat' && !sprintFile
-          const isLoading = loadingAgents.has(agent.id)
+          const isLoading = !!loadingAgents[agent.id]
 
           return (
             <button

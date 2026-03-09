@@ -31,12 +31,12 @@ interface SessionState {
   sessions: Session[]
   activeAgentType: string | null
   messages: ChatMessage[]
-  loadingAgents: Set<string> // 현재 작업 중인 에이전트 추적
+  loadingAgents: Record<string, boolean> // Set → Record로 변경 (Zustand 얕은 비교 호환)
   streamingMessageId: string | null
 
   init: () => Promise<void>
   selectAgent: (agentType: string) => Promise<void>
-  sendMessage: (content: string) => Promise<void>
+  sendMessage: (content: string) => void
   abortAgent: () => Promise<void>
   addStreamChunk: (chunk: any) => void
 }
@@ -46,7 +46,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   sessions: [],
   activeAgentType: null,
   messages: [],
-  loadingAgents: new Set(),
+  loadingAgents: {},
   streamingMessageId: null,
 
   // 앱 시작 시 초기화: 각 에이전트별 세션 확인/생성
@@ -90,7 +90,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ messages: result?.messages || [] })
   },
 
-  sendMessage: async (content: string) => {
+  sendMessage: (content: string) => {
     const { activeAgentType, agentSessions } = get()
     if (!activeAgentType) return
 
@@ -107,7 +107,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     set((state) => ({
       messages: [...state.messages, userMessage],
-      loadingAgents: new Set([...state.loadingAgents, activeAgentType])
+      loadingAgents: { ...state.loadingAgents, [activeAgentType]: true }
     }))
 
     // IPC를 fire-and-forget으로 처리 — UI 블로킹 방지
@@ -127,12 +127,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     // 스트리밍 메시지 제거, 로딩 해제
     set((state) => {
-      const newLoadingAgents = new Set(state.loadingAgents)
-      newLoadingAgents.delete(activeAgentType)
+      const { [activeAgentType]: _, ...rest } = state.loadingAgents
       const messages = state.streamingMessageId
         ? state.messages.filter((m) => m.id !== state.streamingMessageId)
         : state.messages
-      return { loadingAgents: newLoadingAgents, streamingMessageId: null, messages }
+      return { loadingAgents: rest, streamingMessageId: null, messages }
     })
   },
 
@@ -154,8 +153,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           const messagesWithoutStreaming = state.messages.filter(
             (m) => m.id !== state.streamingMessageId
           )
-          const newLoadingAgents = new Set(state.loadingAgents)
-          if (completedAgent) newLoadingAgents.delete(completedAgent)
+          const newLoadingAgents = { ...state.loadingAgents }
+          if (completedAgent) delete newLoadingAgents[completedAgent]
 
           return {
             messages: [
@@ -175,8 +174,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       } else {
         // 다른 에이전트 세션 완료 → 로딩 상태만 해제
         set((state) => {
-          const newLoadingAgents = new Set(state.loadingAgents)
-          if (completedAgent) newLoadingAgents.delete(completedAgent)
+          const newLoadingAgents = { ...state.loadingAgents }
+          if (completedAgent) delete newLoadingAgents[completedAgent]
           return { loadingAgents: newLoadingAgents }
         })
       }

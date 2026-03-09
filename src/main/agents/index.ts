@@ -20,6 +20,16 @@ function getSessionManager(): SessionManager | null {
 // 에이전트별 SDK 세션 ID 관리 (대화 연속성)
 const sdkSessionMap = new Map<string, string>()
 
+/** 특정 에이전트의 SDK 세션을 리셋합니다 (새 대화 시작) */
+export function resetSdkSession(agentType: string): void {
+  sdkSessionMap.delete(agentType)
+}
+
+/** 모든 에이전트의 SDK 세션을 리셋합니다 */
+export function resetAllSdkSessions(): void {
+  sdkSessionMap.clear()
+}
+
 export interface AgentRunOptions {
   sessionId: string
   agentType: string
@@ -572,11 +582,22 @@ async function preprocessIssueCollectorMessage(
     /이슈\s*리포트/,
     /이슈\s*확인/,
     /이슈\s*모[아으]/,
+    /이슈\s*정리/,
+    /이슈\s*파악/,
+    /이슈\s*요약/,
     /채팅?\s*분석/,
+    /대화\s*내용/,
     /대화\s*분석/,
+    /대화\s*가져/,
+    /메시지\s*수집/,
+    /메시지\s*가져/,
+    /메시지\s*분석/,
     /구글\s*챗/,
     /google\s*chat/i,
-    /chat\.google\.com/
+    /chat\.google\.com/,
+    /스쿼드/,
+    /스페이스.*가져/,
+    /채널.*이슈/
   ]
 
   const isTrackingRequest = trackingPatterns.some((p) => p.test(message))
@@ -626,7 +647,11 @@ ${analysisContext}
 위 데이터를 분석하여 이슈 리포트를 생성해주세요.`
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error)
-    return message + `\n\n[시스템] Google Chat 메시지 수집 중 오류가 발생했습니다: ${errMsg}`
+    const is404 = errMsg.includes('404') || errMsg.includes('Not Found')
+    const hint = is404
+      ? '\n가능한 원인: 스페이스 ID가 잘못되었거나, 로그인한 계정이 해당 스페이스에 접근 권한이 없습니다.\n설정에서 Google 계정을 다시 로그인하거나, 스페이스 URL을 확인해주세요.'
+      : ''
+    return message + `\n\n[시스템] Google Chat 메시지 수집 중 오류가 발생했습니다: ${errMsg}${hint}\n\n이 에러 내용을 사용자에게 전달하세요. 직접 API를 호출하지 마세요.`
   }
 }
 
