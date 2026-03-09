@@ -5,6 +5,24 @@ import { is } from '@electron-toolkit/utils'
 import { autoUpdater } from 'electron-updater'
 import { registerIpcHandlers } from './ipc-handlers'
 
+// EPIPE 등 비동기 에러가 앱을 크래시시키지 않도록 전역 핸들러 등록
+process.on('uncaughtException', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') {
+    console.warn('[AR-AI] EPIPE suppressed (broken pipe on aborted stream)')
+    return
+  }
+  console.error('[AR-AI] Uncaught Exception:', err)
+})
+
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? reason.message : String(reason)
+  if (msg.includes('EPIPE') || msg.includes('aborted')) {
+    console.warn('[AR-AI] Unhandled rejection suppressed:', msg)
+    return
+  }
+  console.error('[AR-AI] Unhandled Rejection:', reason)
+})
+
 function getIconPath(): string | undefined {
   // 개발 모드: build 폴더에서 아이콘 로드
   if (is.dev) {

@@ -90,7 +90,8 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
         sessionId,
         agentType: sessionData.session.agentType,
         message,
-        mainWindow
+        mainWindow,
+        abortSignal: abortController.signal
       })
         .then((assistantContent) => {
           activeAbortControllers.delete(sessionId)

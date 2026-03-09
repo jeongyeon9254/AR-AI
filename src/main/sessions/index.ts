@@ -64,6 +64,9 @@ export class SessionManager {
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
       );
+
+      CREATE INDEX IF NOT EXISTS idx_messages_session_created
+        ON messages(sessionId, createdAt);
     `)
   }
 

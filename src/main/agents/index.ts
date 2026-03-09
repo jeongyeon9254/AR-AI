@@ -25,6 +25,7 @@ export interface AgentRunOptions {
   agentType: string
   message: string
   mainWindow: BrowserWindow
+  abortSignal?: AbortSignal
 }
 
 // ── Worktree 관리 (policy-expert 전용) ──
@@ -181,7 +182,7 @@ function buildAdditionalDirectories(): string[] {
 }
 
 export async function runAgent(options: AgentRunOptions): Promise<string> {
-  const { sessionId, agentType, message, mainWindow } = options
+  const { sessionId, agentType, message, mainWindow, abortSignal } = options
 
   // ESM 모듈을 dynamic import로 로드
   const { query } = await import('@anthropic-ai/claude-agent-sdk')
@@ -257,6 +258,12 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   // SDK 세션 resume으로 대화 연속성 유지
   const existingSdkSession = sdkSessionMap.get(agentType)
 
+  // 에이전트별 토큰/턴 최적화
+  const ANALYSIS_AGENTS = ['policy-expert', 'issue-collector', 'po', 'qa-expert']
+  const isAnalysisAgent = ANALYSIS_AGENTS.includes(agentType)
+  const maxTurns = isAnalysisAgent ? 15 : 30
+  const maxTokens = isAnalysisAgent ? 4096 : 8192
+
   const queryOptions: any = {
     pathToClaudeCodeExecutable: cliPath,
     // spawnClaudeCodeProcess: node 절대 경로로 직접 spawn하여 PATH 문제 우회
@@ -274,6 +281,17 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       child.stderr?.on('data', (data: Buffer) => {
         console.log('[AR-AI SDK stderr]', data.toString())
       })
+      // EPIPE 에러 억제 — abort 시 닫힌 stdin에 쓰기 시도하면 발생
+      child.stdin?.on('error', (err: NodeJS.ErrnoException) => {
+        if (err.code !== 'EPIPE') {
+          console.error('[AR-AI SDK stdin error]', err)
+        }
+      })
+      child.stdout?.on('error', (err: NodeJS.ErrnoException) => {
+        if (err.code !== 'EPIPE') {
+          console.error('[AR-AI SDK stdout error]', err)
+        }
+      })
       return {
         stdin: child.stdin,
         stdout: child.stdout,
@@ -290,7 +308,8 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     allowedTools: ['Read', 'Edit', 'Glob', 'Grep', 'Bash', 'Write', 'Agent'],
     cwd,
     additionalDirectories: additionalDirectories.length > 0 ? additionalDirectories : undefined,
-    maxTurns: 30,
+    maxTurns,
+    maxTokens,
     env: cleanEnv
   }
 
@@ -338,6 +357,11 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       ).join('\n')}\n\n작업에 적합한 스킬이 있으면 해당 스킬의 지침에 따라 작업을 수행하세요. 여러 스킬을 조합할 수도 있습니다.`
     : ''
 
+  // 서브에이전트에는 스킬 이름 목록만 전달 (토큰 절약)
+  const subAgentSkillContext = enabledSkills.length > 0
+    ? `\n\n사용 가능한 스킬: ${enabledSkills.map((s) => `/${s.name}`).join(', ')}`
+    : ''
+
   if (isOrchestrator) {
     queryOptions.systemPrompt = ORCHESTRATOR_SYSTEM_PROMPT + sharedContext + todoContext + todoInstruction
     queryOptions.agents = AGENT_DEFINITIONS
@@ -353,8 +377,8 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       for (const [name, agent] of Object.entries(subAgents)) {
         enrichedAgents[name] = {
           ...agent,
-          // 스킬 컨텍스트를 서브에이전트 프롬프트 뒤에 추가
-          prompt: agent.prompt + skillContext,
+          // 서브에이전트에는 스킬 이름 목록만 전달 (토큰 절약)
+          prompt: agent.prompt + subAgentSkillContext,
           // MCP 서버를 서브에이전트에도 전파 (SDK는 자동 상속하지 않음)
           // AgentMcpServerSpec[] = Array<string | Record<string, config>>
           ...(mcpSpec ? { mcpServers: Object.keys(mcpSpec).map((n) => ({ [n]: mcpSpec[n] })) } : {})
@@ -374,6 +398,9 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
 
   try {
     for await (const sdkMessage of query({ prompt: enrichedMessage, options: queryOptions })) {
+      // abort 또는 창 닫힘 시 즉시 루프 탈출
+      if (abortSignal?.aborted || mainWindow.isDestroyed()) break
+
       console.log('[AR-AI SDK Message]', sdkMessage.type)
 
       // 첫 메시지에서 SDK 세션 ID 캡처 → 다음 대화에서 resume 용
@@ -426,13 +453,23 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       }
     }
   } catch (error: any) {
-    console.error('[AR-AI Agent Error]', error?.message, error?.stack)
-    const parts: string[] = []
-    if (error?.message) parts.push(`message: ${error.message}`)
-    if (error?.stderr) parts.push(`stderr: ${error.stderr}`)
-    if (error?.stdout) parts.push(`stdout: ${error.stdout}`)
-    if (parts.length === 0) parts.push(String(error))
-    fullContent = `오류가 발생했습니다:\n${parts.join('\n')}`
+    // abort로 인한 에러는 정상 종료 — 무시
+    const isAbortError = abortSignal?.aborted ||
+      error?.code === 'EPIPE' ||
+      error?.message?.includes('EPIPE') ||
+      error?.name === 'AbortError' ||
+      error?.message?.includes('aborted')
+    if (isAbortError) {
+      console.log('[AR-AI] Agent aborted:', agentType)
+    } else {
+      console.error('[AR-AI Agent Error]', error?.message, error?.stack)
+      const parts: string[] = []
+      if (error?.message) parts.push(`message: ${error.message}`)
+      if (error?.stderr) parts.push(`stderr: ${error.stderr}`)
+      if (error?.stdout) parts.push(`stdout: ${error.stdout}`)
+      if (parts.length === 0) parts.push(String(error))
+      fullContent = `오류가 발생했습니다:\n${parts.join('\n')}`
+    }
   }
 
   // worktree 정리
@@ -448,14 +485,18 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     contextBoard.add(agentType, summary)
 
     // Todo 명령 파싱 및 실행
-    processTodoCommands(agentType, fullContent, mainWindow)
+    if (!mainWindow.isDestroyed()) {
+      processTodoCommands(agentType, fullContent, mainWindow)
+    }
   }
 
-  mainWindow.webContents.send('chat:stream-chunk', {
-    sessionId,
-    content: finalContent,
-    done: true
-  })
+  if (!mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('chat:stream-chunk', {
+      sessionId,
+      content: finalContent,
+      done: true
+    })
+  }
 
   return finalContent
 }

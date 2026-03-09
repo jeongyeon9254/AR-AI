@@ -61,12 +61,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       }
     }
 
-    // 없는 에이전트 세션 생성
-    for (const agent of AGENT_TYPES) {
-      if (!agentSessions[agent.id]) {
-        const newSession = await window.electronAPI.createSession(agent.id)
-        agentSessions[agent.id] = newSession.id
-        sessions.push(newSession)
+    // 없는 에이전트 세션 병렬 생성
+    const missingAgents = AGENT_TYPES.filter((agent) => !agentSessions[agent.id])
+    if (missingAgents.length > 0) {
+      const newSessions = await Promise.all(
+        missingAgents.map((agent) => window.electronAPI.createSession(agent.id))
+      )
+      for (let i = 0; i < missingAgents.length; i++) {
+        agentSessions[missingAgents[i].id] = newSessions[i].id
+        sessions.push(newSessions[i])
       }
     }
 
@@ -78,12 +81,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const sessionId = agentSessions[agentType]
     if (!sessionId) return
 
+    // 낙관적 업데이트: 즉시 에이전트 전환 → 메시지는 IPC 완료 후 채움
+    set({ activeAgentType: agentType, messages: [], streamingMessageId: null })
+
     const result = await window.electronAPI.getSession(sessionId)
-    set({
-      activeAgentType: agentType,
-      messages: result?.messages || [],
-      streamingMessageId: null
-    })
+    // IPC 동안 다른 에이전트로 전환했으면 무시
+    if (get().activeAgentType !== agentType) return
+    set({ messages: result?.messages || [] })
   },
 
   sendMessage: async (content: string) => {
