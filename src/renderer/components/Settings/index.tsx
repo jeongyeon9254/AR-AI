@@ -165,6 +165,40 @@ export function Settings(): JSX.Element {
           </div>
         </section>
 
+        {/* Figma 연동 */}
+        <section>
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+            Figma 연동
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>Personal Access Token</label>
+              <input type="password" value={form.figmaAccessToken || ''}
+                onChange={(e) => handleChange('figmaAccessToken', e.target.value)}
+                placeholder="figd_xxxxxxxxxxxxxxxx"
+                className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  background: 'var(--bg-input)', color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)'
+                }} />
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                Figma {'>'} Settings {'>'} Security {'>'} Personal Access Tokens에서 발급
+              </p>
+            </div>
+            <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {form.figmaAccessToken ? '토큰 설정됨' : '토큰 미설정'}
+                <span className="ml-2 text-[10px]" style={{ color: form.figmaAccessToken ? '#4ade80' : '#f87171' }}>
+                  {form.figmaAccessToken ? '● 연결됨' : '● 미연결'}
+                </span>
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                FE Developer와 PO에게 Figma 링크를 전달하면 디자인을 분석합니다.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* MCP 서버 */}
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>

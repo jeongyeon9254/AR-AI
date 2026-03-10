@@ -10,6 +10,8 @@ export interface McpServerConfig {
   enabled: boolean
   /** 자동 생성된 서버 (레포 경로 기반 Serena 등) — 삭제 불가, 경로 변경 시 자동 갱신 */
   auto?: boolean
+  /** MCP 서버 프로세스에 전달할 환경변수 */
+  env?: Record<string, string>
 }
 
 export interface SkillDefinition {
@@ -29,6 +31,7 @@ export interface AppSettings {
   sprintPath: string
   googleChatCredentialsPath: string
   googleChatDefaultSpace: string
+  figmaAccessToken: string
   mcpServers: Record<string, McpServerConfig>
   agentMcpAssignments: Record<string, string[]>
   skills: SkillDefinition[]
@@ -59,16 +62,21 @@ const defaultMcpServers: Record<string, McpServerConfig> = {
     command: 'npx',
     args: ['-y', '@modelcontextprotocol/server-sequential-thinking'],
     enabled: true
+  },
+  'figma': {
+    command: 'npx',
+    args: ['-y', 'figma-developer-mcp', '--stdio'],
+    enabled: true
   }
 }
 
 const defaultAgentMcpAssignments: Record<string, string[]> = {
-  'fe-developer': ['context7'],
+  'fe-developer': ['context7', 'figma'],
   'be-developer': ['context7'],
   'issue-collector': [],
   'policy-expert': ['sequential-thinking'],
   'qa-expert': ['playwright', 'context7'],
-  'po': ['sequential-thinking']
+  'po': ['sequential-thinking', 'figma']
 }
 
 /** 레포 경로 → Serena MCP 서버명 매핑 */
@@ -153,6 +161,7 @@ function getDefaultSettings(): AppSettings {
     sprintPath: '',
     googleChatCredentialsPath: '',
     googleChatDefaultSpace: '',
+    figmaAccessToken: '',
     mcpServers: defaultMcpServers,
     agentMcpAssignments: defaultAgentMcpAssignments,
     skills: getDefaultSkills(),

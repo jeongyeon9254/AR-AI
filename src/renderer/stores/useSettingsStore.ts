@@ -6,6 +6,8 @@ export interface McpServerConfig {
   enabled: boolean
   /** 자동 생성된 서버 (레포 경로 기반 Serena 등) */
   auto?: boolean
+  /** MCP 서버 프로세스에 전달할 환경변수 */
+  env?: Record<string, string>
 }
 
 export interface SkillDefinition {
@@ -25,6 +27,7 @@ export interface AppSettings {
   sprintPath: string
   googleChatCredentialsPath: string
   googleChatDefaultSpace: string
+  figmaAccessToken: string
   mcpServers: Record<string, McpServerConfig>
   agentMcpAssignments: Record<string, string[]>
   skills: SkillDefinition[]
@@ -58,6 +61,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     sprintPath: '',
     googleChatCredentialsPath: '',
     googleChatDefaultSpace: '',
+    figmaAccessToken: '',
     mcpServers: {},
     agentMcpAssignments: {},
     skills: [],

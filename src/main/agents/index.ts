@@ -359,11 +359,23 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   await syncSkillFilesAsync()
   const settings = getSettings()
   const assignedMcpNames = settings.agentMcpAssignments[agentType] || []
-  const mcpServersConfig: Record<string, { command: string; args: string[] }> = {}
+  const mcpServersConfig: Record<string, { command: string; args: string[]; env?: Record<string, string> }> = {}
   for (const name of assignedMcpNames) {
     const server = settings.mcpServers[name]
     if (server && server.enabled) {
-      mcpServersConfig[name] = { command: server.command, args: server.args }
+      const serverEntry: { command: string; args: string[]; env?: Record<string, string> } = {
+        command: server.command, args: server.args
+      }
+      // MCP 서버별 환경변수 전달
+      const envVars: Record<string, string> = { ...(server.env || {}) }
+      // Figma 서버에 토큰 자동 주입
+      if (name === 'figma' && settings.figmaAccessToken) {
+        envVars['FIGMA_ACCESS_TOKEN'] = settings.figmaAccessToken
+      }
+      if (Object.keys(envVars).length > 0) {
+        serverEntry.env = envVars
+      }
+      mcpServersConfig[name] = serverEntry
     }
   }
   if (Object.keys(mcpServersConfig).length > 0) {
