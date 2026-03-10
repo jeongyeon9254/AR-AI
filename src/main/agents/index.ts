@@ -382,6 +382,13 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     queryOptions.mcpServers = mcpServersConfig
   }
 
+  // [DEBUG] MCP 서버 전달 확인
+  console.log(`[AR-AI MCP Debug] agent=${agentType}, resume=${!!existingSdkSession}, assignedMcpNames=${JSON.stringify(assignedMcpNames)}, mcpServersConfig keys=${JSON.stringify(Object.keys(mcpServersConfig))}`)
+  for (const [name, cfg] of Object.entries(mcpServersConfig)) {
+    const c = cfg as { command: string; args: string[]; env?: Record<string, string> }
+    console.log(`[AR-AI MCP Debug]   ${name}: command=${c.command}, args=${JSON.stringify(c.args)}, env keys=${c.env ? Object.keys(c.env).join(',') : 'none'}`)
+  }
+
   // 활성화된 전체 스킬 목록 (에이전트가 알아서 선택)
   const enabledSkills = settings.skills.filter((s) => s.enabled)
 
@@ -401,7 +408,14 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     queryOptions.agents = AGENT_DEFINITIONS
   } else if (agentDef) {
     queryOptions.systemPrompt = agentDef.prompt + worktreeContext + skillContext + sharedContext + todoContext + todoInstruction
-    queryOptions.allowedTools = [...(agentDef.tools || ['Read', 'Grep', 'Glob'])]
+    // MCP 서버가 할당된 경우 allowedTools를 설정하지 않음 (MCP 도구가 mcp__서버명__도구명 패턴이라 화이트리스트로 차단됨)
+    // MCP가 없으면 기존대로 allowedTools로 제한
+    if (Object.keys(mcpServersConfig).length > 0) {
+      queryOptions.disallowedTools = []  // 모든 도구 허용 (시스템 프롬프트로 가이드)
+      delete queryOptions.allowedTools
+    } else {
+      queryOptions.allowedTools = [...(agentDef.tools || ['Read', 'Grep', 'Glob'])]
+    }
 
     // 서브에이전트 할당 — MCP + 스킬 컨텍스트를 각 서브에이전트에 전파
     const subAgents = SUB_AGENTS[agentType]
@@ -409,8 +423,11 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       const mcpSpec = Object.keys(mcpServersConfig).length > 0 ? mcpServersConfig : undefined
       const enrichedAgents: Record<string, any> = {}
       for (const [name, agent] of Object.entries(subAgents)) {
+        // 서브에이전트도 MCP가 있으면 allowedTools 제한 해제
+        const subAgentTools = mcpSpec ? {} : { tools: agent.tools }
         enrichedAgents[name] = {
           ...agent,
+          ...subAgentTools,
           // 서브에이전트에는 스킬 이름 목록만 전달 (토큰 절약)
           prompt: agent.prompt + subAgentSkillContext,
           // MCP 서버를 서브에이전트에도 전파 (SDK는 자동 상속하지 않음)
@@ -436,6 +453,18 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       if (abortSignal?.aborted || mainWindow.isDestroyed()) break
 
       console.log('[AR-AI SDK Message]', sdkMessage.type)
+
+      // [DEBUG] SDK init 메시지에서 MCP 서버 상태 확인
+      if (sdkMessage.type === 'system' && (sdkMessage as any).subtype === 'init') {
+        const initMsg = sdkMessage as any
+        if (initMsg.mcp_servers) {
+          console.log('[AR-AI MCP Debug] Init mcp_servers:', JSON.stringify(initMsg.mcp_servers))
+        }
+        if (initMsg.tools) {
+          const mcpTools = (initMsg.tools as string[]).filter((t: string) => t.startsWith('mcp__'))
+          console.log(`[AR-AI MCP Debug] MCP tools available (${mcpTools.length}):`, mcpTools.length > 0 ? mcpTools.join(', ') : 'NONE')
+        }
+      }
 
       // 첫 메시지에서 SDK 세션 ID 캡처 → 다음 대화에서 resume 용
       if ('session_id' in sdkMessage && (sdkMessage as any).session_id) {
