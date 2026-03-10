@@ -403,11 +403,25 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
     ? `\n\n사용 가능한 스킬: ${enabledSkills.map((s) => `/${s.name}`).join(', ')}`
     : ''
 
+  // MCP 실행 환경 컨텍스트: 에이전트가 자신에게 주입된 MCP 서버를 정확히 인지하도록 안내
+  const mcpKeys = Object.keys(mcpServersConfig)
+  const mcpEnvironmentContext = mcpKeys.length > 0
+    ? `\n\n## 실행 환경 안내
+당신은 AR-AI 앱에서 Claude Agent SDK를 통해 실행되고 있습니다.
+아래 MCP 서버가 이미 자동으로 주입되어 있으므로 별도 설정 없이 바로 사용할 수 있습니다:
+${mcpKeys.map((name) => `- ${name}`).join('\n')}
+
+중요:
+- .mcp.json이나 ~/.claude.json을 확인하거나 수정할 필요가 없습니다.
+- MCP 서버 설정을 사용자에게 안내하지 마세요. AR-AI 앱이 자동으로 관리합니다.
+- API 토큰이나 인증 정보를 응답에 절대 포함하지 마세요.`
+    : ''
+
   if (isOrchestrator) {
     queryOptions.systemPrompt = ORCHESTRATOR_SYSTEM_PROMPT + sharedContext + todoContext + todoInstruction
     queryOptions.agents = AGENT_DEFINITIONS
   } else if (agentDef) {
-    queryOptions.systemPrompt = agentDef.prompt + worktreeContext + skillContext + sharedContext + todoContext + todoInstruction
+    queryOptions.systemPrompt = agentDef.prompt + worktreeContext + mcpEnvironmentContext + skillContext + sharedContext + todoContext + todoInstruction
     // MCP 서버가 할당된 경우 allowedTools를 설정하지 않음 (MCP 도구가 mcp__서버명__도구명 패턴이라 화이트리스트로 차단됨)
     // MCP가 없으면 기존대로 allowedTools로 제한
     if (Object.keys(mcpServersConfig).length > 0) {
