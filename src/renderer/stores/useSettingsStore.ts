@@ -1,14 +1,25 @@
 import { create } from 'zustand'
 
-export interface McpServerConfig {
+/** stdio 기반 MCP 서버 (로컬 프로세스) */
+export interface McpStdioServerConfig {
+  type?: 'stdio'
   command: string
   args: string[]
   enabled: boolean
-  /** 자동 생성된 서버 (레포 경로 기반 Serena 등) */
   auto?: boolean
-  /** MCP 서버 프로세스에 전달할 환경변수 */
   env?: Record<string, string>
 }
+
+/** HTTP 기반 MCP 서버 (원격 URL) */
+export interface McpHttpServerConfig {
+  type: 'http'
+  url: string
+  headers?: Record<string, string>
+  enabled: boolean
+  auto?: boolean
+}
+
+export type McpServerConfig = McpStdioServerConfig | McpHttpServerConfig
 
 export interface SkillDefinition {
   name: string

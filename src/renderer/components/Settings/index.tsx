@@ -360,21 +360,33 @@ function McpServerManager({ servers, assignments, onServersChange, onAssignments
 }): JSX.Element {
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
+  const [newType, setNewType] = useState<'stdio' | 'http'>('stdio')
   const [newCommand, setNewCommand] = useState('npx')
   const [newArgs, setNewArgs] = useState('')
+  const [newUrl, setNewUrl] = useState('')
 
   const serverNames = Object.keys(servers)
 
   const handleAddServer = (): void => {
     if (!newName.trim()) return
-    const argsArray = newArgs.split(/\s+/).filter(Boolean)
-    onServersChange({
-      ...servers,
-      [newName.trim()]: { command: newCommand, args: argsArray, enabled: true }
-    })
+    if (newType === 'http') {
+      if (!newUrl.trim()) return
+      onServersChange({
+        ...servers,
+        [newName.trim()]: { type: 'http', url: newUrl.trim(), enabled: true }
+      })
+    } else {
+      const argsArray = newArgs.split(/\s+/).filter(Boolean)
+      onServersChange({
+        ...servers,
+        [newName.trim()]: { command: newCommand, args: argsArray, enabled: true }
+      })
+    }
     setNewName('')
+    setNewType('stdio')
     setNewCommand('npx')
     setNewArgs('')
+    setNewUrl('')
     setAdding(false)
   }
 
@@ -411,9 +423,9 @@ function McpServerManager({ servers, assignments, onServersChange, onAssignments
       {serverNames.map((name) => {
         const isAuto = !!servers[name].auto
         const isSerena = name.startsWith('serena-')
-        // auto 서버의 args에서 --project 경로 추출
-        const projectPath = isAuto
-          ? servers[name].args[servers[name].args.indexOf('--project') + 1] || ''
+        // auto 서버의 args에서 --project 경로 추출 (stdio 타입만)
+        const projectPath = isAuto && servers[name].type !== 'http'
+          ? (() => { const s = servers[name] as any; const idx = s.args?.indexOf('--project'); return idx >= 0 ? s.args[idx + 1] || '' : '' })()
           : ''
         return (
         <div key={name} className="rounded-xl p-4" style={{
@@ -450,9 +462,13 @@ function McpServerManager({ servers, assignments, onServersChange, onAssignments
             <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
               Serena (시맨틱 코드 분석) — {projectPath}
             </p>
+          ) : servers[name].type === 'http' ? (
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+              HTTP — {servers[name].url}
+            </p>
           ) : (
             <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-              {servers[name].command} {servers[name].args.join(' ')}
+              {(servers[name] as any).command} {(servers[name] as any).args?.join(' ')}
             </p>
           )}
           {/* 에이전트 할당 */}
@@ -483,21 +499,37 @@ function McpServerManager({ servers, assignments, onServersChange, onAssignments
             <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
               placeholder="서버 이름" className="flex-1 rounded-lg px-3 py-1.5 text-sm focus:outline-none"
               style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} />
-            <input type="text" value={newCommand} onChange={(e) => setNewCommand(e.target.value)}
-              placeholder="command" className="w-20 rounded-lg px-3 py-1.5 text-sm focus:outline-none"
-              style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} />
+            <select value={newType} onChange={(e) => setNewType(e.target.value as 'stdio' | 'http')}
+              className="rounded-lg px-2 py-1.5 text-sm focus:outline-none"
+              style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
+              <option value="stdio">stdio</option>
+              <option value="http">HTTP</option>
+            </select>
           </div>
-          <input type="text" value={newArgs} onChange={(e) => setNewArgs(e.target.value)}
-            placeholder="args (공백으로 구분: -y @package/name)"
-            className="w-full rounded-lg px-3 py-1.5 text-sm focus:outline-none"
-            style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} />
+          {newType === 'http' ? (
+            <input type="text" value={newUrl} onChange={(e) => setNewUrl(e.target.value)}
+              placeholder="URL (https://example.com/mcp)"
+              className="w-full rounded-lg px-3 py-1.5 text-sm focus:outline-none"
+              style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} />
+          ) : (
+            <>
+              <input type="text" value={newCommand} onChange={(e) => setNewCommand(e.target.value)}
+                placeholder="command (npx, uvx, node...)"
+                className="w-full rounded-lg px-3 py-1.5 text-sm focus:outline-none"
+                style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} />
+              <input type="text" value={newArgs} onChange={(e) => setNewArgs(e.target.value)}
+                placeholder="args (공백으로 구분: -y @package/name)"
+                className="w-full rounded-lg px-3 py-1.5 text-sm focus:outline-none"
+                style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }} />
+            </>
+          )}
           <div className="flex gap-2">
             <button onClick={handleAddServer}
               className="px-3 py-1.5 rounded-lg text-xs font-medium"
               style={{ background: 'var(--accent)', color: '#fff' }}>
               추가
             </button>
-            <button onClick={() => setAdding(false)}
+            <button onClick={() => { setAdding(false); setNewType('stdio') }}
               className="px-3 py-1.5 rounded-lg text-xs"
               style={{ color: 'var(--text-muted)' }}>
               취소

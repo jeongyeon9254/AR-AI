@@ -359,23 +359,33 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   await syncSkillFilesAsync()
   const settings = getSettings()
   const assignedMcpNames = settings.agentMcpAssignments[agentType] || []
-  const mcpServersConfig: Record<string, { command: string; args: string[]; env?: Record<string, string> }> = {}
+  const mcpServersConfig: Record<string, Record<string, unknown>> = {}
   for (const name of assignedMcpNames) {
     const server = settings.mcpServers[name]
     if (server && server.enabled) {
-      const serverEntry: { command: string; args: string[]; env?: Record<string, string> } = {
-        command: server.command, args: server.args
+      if (server.type === 'http') {
+        // HTTP 기반 MCP 서버
+        const headers: Record<string, string> = { ...(server.headers || {}) }
+        // Figma 서버에 토큰 자동 주입
+        if (name === 'figma' && settings.figmaAccessToken) {
+          headers['X-Figma-Token'] = settings.figmaAccessToken
+        }
+        mcpServersConfig[name] = {
+          type: 'http',
+          url: server.url,
+          ...(Object.keys(headers).length > 0 ? { headers } : {})
+        }
+      } else {
+        // Stdio 기반 MCP 서버
+        const serverEntry: Record<string, unknown> = {
+          command: server.command, args: server.args
+        }
+        const envVars: Record<string, string> = { ...(server.env || {}) }
+        if (Object.keys(envVars).length > 0) {
+          serverEntry.env = envVars
+        }
+        mcpServersConfig[name] = serverEntry
       }
-      // MCP 서버별 환경변수 전달
-      const envVars: Record<string, string> = { ...(server.env || {}) }
-      // Figma 서버에 토큰 자동 주입
-      if (name === 'figma' && settings.figmaAccessToken) {
-        envVars['FIGMA_ACCESS_TOKEN'] = settings.figmaAccessToken
-      }
-      if (Object.keys(envVars).length > 0) {
-        serverEntry.env = envVars
-      }
-      mcpServersConfig[name] = serverEntry
     }
   }
   if (Object.keys(mcpServersConfig).length > 0) {
@@ -385,8 +395,13 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   // [DEBUG] MCP 서버 전달 확인
   console.log(`[AR-AI MCP Debug] agent=${agentType}, resume=${!!existingSdkSession}, assignedMcpNames=${JSON.stringify(assignedMcpNames)}, mcpServersConfig keys=${JSON.stringify(Object.keys(mcpServersConfig))}`)
   for (const [name, cfg] of Object.entries(mcpServersConfig)) {
-    const c = cfg as { command: string; args: string[]; env?: Record<string, string> }
-    console.log(`[AR-AI MCP Debug]   ${name}: command=${c.command}, args=${JSON.stringify(c.args)}, env keys=${c.env ? Object.keys(c.env).join(',') : 'none'}`)
+    if ((cfg as any).type === 'http') {
+      const c = cfg as { url: string; headers?: Record<string, string> }
+      console.log(`[AR-AI MCP Debug]   ${name}: type=http, url=${c.url}, headers=${c.headers ? Object.keys(c.headers).join(',') : 'none'}`)
+    } else {
+      const c = cfg as { command: string; args: string[]; env?: Record<string, string> }
+      console.log(`[AR-AI MCP Debug]   ${name}: type=stdio, command=${c.command}, args=${JSON.stringify(c.args)}, env keys=${c.env ? Object.keys(c.env).join(',') : 'none'}`)
+    }
   }
 
   // 활성화된 전체 스킬 목록 (에이전트가 알아서 선택)

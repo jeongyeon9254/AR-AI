@@ -4,7 +4,9 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { writeFile, mkdir } from 'fs/promises'
 import { loadBuiltinSkills, scanExternalSkills } from './skills'
 
-export interface McpServerConfig {
+/** stdio 기반 MCP 서버 (로컬 프로세스) */
+export interface McpStdioServerConfig {
+  type?: 'stdio'
   command: string
   args: string[]
   enabled: boolean
@@ -13,6 +15,17 @@ export interface McpServerConfig {
   /** MCP 서버 프로세스에 전달할 환경변수 */
   env?: Record<string, string>
 }
+
+/** HTTP 기반 MCP 서버 (원격 URL) */
+export interface McpHttpServerConfig {
+  type: 'http'
+  url: string
+  headers?: Record<string, string>
+  enabled: boolean
+  auto?: boolean
+}
+
+export type McpServerConfig = McpStdioServerConfig | McpHttpServerConfig
 
 export interface SkillDefinition {
   name: string
@@ -64,8 +77,9 @@ const defaultMcpServers: Record<string, McpServerConfig> = {
     enabled: true
   },
   'figma': {
-    command: 'npx',
-    args: ['-y', 'figma-developer-mcp', '--stdio'],
+    type: 'http',
+    url: 'https://mcp.figma.com/mcp',
+    headers: {},
     enabled: true
   }
 }
@@ -97,7 +111,7 @@ const SERENA_AGENT_ASSIGNMENTS: Record<string, string[]> = {
   'po': ['serena-core-front', 'serena-alpha-review', 'serena-write-page', 'serena-widget-script']
 }
 
-function buildSerenaServer(projectPath: string): McpServerConfig {
+function buildSerenaServer(projectPath: string): McpStdioServerConfig {
   return {
     command: 'uvx',
     args: [
@@ -220,6 +234,10 @@ export function getSettings(): AppSettings {
       if (!(server as McpServerConfig).auto) {
         userMcpServers[name] = server as McpServerConfig
       }
+    }
+    // 마이그레이션: figma가 구 stdio 형식이면 HTTP로 자동 업그레이드
+    if (userMcpServers['figma'] && (userMcpServers['figma'] as any).command) {
+      userMcpServers['figma'] = { ...defaultMcpServers['figma'] }
     }
     const mergedSettings = { ...defaults, ...parsed }
     const serenaServers = buildSerenaMcpServers(mergedSettings)
