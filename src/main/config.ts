@@ -76,21 +76,20 @@ const defaultMcpServers: Record<string, McpServerConfig> = {
     args: ['-y', '@modelcontextprotocol/server-sequential-thinking'],
     enabled: true
   },
-  'figma': {
+  'figma-design': {
     type: 'http',
     url: 'https://mcp.figma.com/mcp',
-    headers: {},
     enabled: true
   }
 }
 
 const defaultAgentMcpAssignments: Record<string, string[]> = {
-  'fe-developer': ['context7', 'figma'],
+  'fe-developer': ['context7', 'figma-design'],
   'be-developer': ['context7'],
   'issue-collector': [],
   'policy-expert': ['sequential-thinking'],
   'qa-expert': ['playwright', 'context7'],
-  'po': ['sequential-thinking', 'figma']
+  'po': ['sequential-thinking', 'figma-design']
 }
 
 /** 레포 경로 → Serena MCP 서버명 매핑 */
@@ -235,9 +234,12 @@ export function getSettings(): AppSettings {
         userMcpServers[name] = server as McpServerConfig
       }
     }
-    // 마이그레이션: figma가 구 stdio 형식이면 HTTP로 자동 업그레이드
-    if (userMcpServers['figma'] && (userMcpServers['figma'] as any).command) {
-      userMcpServers['figma'] = { ...defaultMcpServers['figma'] }
+    // 마이그레이션: 구 'figma' 서버를 'figma-design' HTTP로 자동 업그레이드
+    if (userMcpServers['figma']) {
+      delete userMcpServers['figma']
+    }
+    if (!userMcpServers['figma-design']) {
+      userMcpServers['figma-design'] = { ...defaultMcpServers['figma-design'] }
     }
     const mergedSettings = { ...defaults, ...parsed }
     const serenaServers = buildSerenaMcpServers(mergedSettings)
@@ -255,11 +257,12 @@ export function getSettings(): AppSettings {
       const serena = serenaAssignments[agentId] || []
       const saved = (parsed.agentMcpAssignments || {})[agentId]
       if (saved) {
-        // 사용자가 저장한 할당 + Serena 자동 할당 (사용자가 제거한 Serena는 유지하지 않음)
-        const savedSet = new Set(saved)
+        // 마이그레이션: 구 'figma' → 'figma-design' 이름 변경
+        const migrated = saved.map((s: string) => s === 'figma' ? 'figma-design' : s)
+        const savedSet = new Set(migrated)
         // 사용자 저장에 없는 Serena 서버 중, 새로 추가된 것만 포함
         const newSerena = serena.filter((s: string) => !savedSet.has(s) && !(s in (savedMcpServers as Record<string, unknown>)))
-        mergedAssignments[agentId] = [...new Set([...saved, ...newSerena])]
+        mergedAssignments[agentId] = [...new Set([...migrated, ...newSerena])]
       } else {
         mergedAssignments[agentId] = [...new Set([...base, ...serena])]
       }

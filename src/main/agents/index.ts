@@ -366,10 +366,6 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       if (server.type === 'http') {
         // HTTP 기반 MCP 서버
         const headers: Record<string, string> = { ...(server.headers || {}) }
-        // Figma 서버에 토큰 자동 주입
-        if (name === 'figma' && settings.figmaAccessToken) {
-          headers['X-Figma-Token'] = settings.figmaAccessToken
-        }
         mcpServersConfig[name] = {
           type: 'http',
           url: server.url,
