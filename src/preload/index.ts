@@ -5,7 +5,7 @@ export interface ElectronAPI {
   listSessions: () => Promise<any[]>
   getSession: (id: string) => Promise<any>
   deleteSession: (id: string) => Promise<boolean>
-  sendMessage: (sessionId: string, message: string) => Promise<any>
+  sendMessage: (sessionId: string, message: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => Promise<any>
   abortMessage: (sessionId: string) => Promise<any>
   onStreamChunk: (callback: (chunk: any) => void) => () => void
   onAuthStatus: (callback: (status: any) => void) => () => void
@@ -37,8 +37,8 @@ const api: ElectronAPI = {
   listSessions: () => ipcRenderer.invoke('session:list'),
   getSession: (id: string) => ipcRenderer.invoke('session:get', id),
   deleteSession: (id: string) => ipcRenderer.invoke('session:delete', id),
-  sendMessage: (sessionId: string, message: string) =>
-    ipcRenderer.invoke('chat:send', sessionId, message),
+  sendMessage: (sessionId: string, message: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) =>
+    ipcRenderer.invoke('chat:send', sessionId, message, attachments),
   abortMessage: (sessionId: string) => ipcRenderer.invoke('chat:abort', sessionId),
   onStreamChunk: (callback: (chunk: any) => void) => {
     const handler = (_event: any, chunk: any): void => callback(chunk)

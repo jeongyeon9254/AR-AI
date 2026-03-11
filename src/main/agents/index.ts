@@ -37,10 +37,17 @@ export function resetAllSdkSessions(): void {
   sdkSessionMap.clear()
 }
 
+export interface FileAttachment {
+  name: string
+  data: string // base64
+  mediaType: string // e.g. 'image/png', 'application/pdf', 'text/csv'
+}
+
 export interface AgentRunOptions {
   sessionId: string
   agentType: string
   message: string
+  attachments?: FileAttachment[]
   mainWindow: BrowserWindow
   abortSignal?: AbortSignal
 }
@@ -205,7 +212,7 @@ function buildAdditionalDirectories(): string[] {
 }
 
 export async function runAgent(options: AgentRunOptions): Promise<string> {
-  const { sessionId, agentType, message, mainWindow, abortSignal } = options
+  const { sessionId, agentType, message, attachments, mainWindow, abortSignal } = options
 
   // ESM 모듈을 dynamic import로 로드
   const { query } = await import('@anthropic-ai/claude-agent-sdk')
@@ -243,9 +250,18 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
         timeout: 5000
       })
       _cachedShellPath = stdout.trim()
+      console.log('[AR-AI] Shell PATH resolved (shell):', _cachedShellPath.substring(0, 200))
     } catch {
-      const fallbackPaths = ['/usr/local/bin', '/opt/homebrew/bin']
+      const homeDir = app.getPath('home')
+      const fallbackPaths = [
+        join(homeDir, '.local/bin'),          // uvx (uv/rye)
+        join(homeDir, '.nvm/versions/node', process.versions.node, 'bin'), // npx (nvm)
+        '/usr/local/bin',
+        '/opt/homebrew/bin',
+        '/opt/homebrew/sbin'
+      ]
       _cachedShellPath = [...fallbackPaths, process.env.PATH || ''].join(':')
+      console.log('[AR-AI] Shell PATH resolved (fallback):', _cachedShellPath.substring(0, 200))
     }
   }
   cleanEnv.PATH = _cachedShellPath
@@ -470,10 +486,73 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     enrichedMessage = await preprocessIssueCollectorMessage(message, mainWindow, sessionId)
   }
 
+  // 파일 첨부가 있는 경우 멀티모달 프롬프트 구성
+  let prompt: string | AsyncIterable<any> = enrichedMessage
+  if (attachments && attachments.length > 0) {
+    const contentBlocks: any[] = []
+    const textParts: string[] = []
+
+    for (const file of attachments) {
+      if (file.mediaType.startsWith('image/')) {
+        // 이미지 → ImageBlockParam
+        contentBlocks.push({
+          type: 'image',
+          source: { type: 'base64', media_type: file.mediaType, data: file.data }
+        })
+      } else if (file.mediaType === 'application/pdf') {
+        // PDF → DocumentBlockParam
+        contentBlocks.push({
+          type: 'document',
+          source: { type: 'base64', media_type: 'application/pdf', data: file.data }
+        })
+      } else if (
+        file.mediaType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        file.mediaType === 'application/vnd.ms-excel'
+      ) {
+        // Excel → xlsx 파싱 후 텍스트로 변환
+        try {
+          const XLSX = await import('xlsx')
+          const buffer = Buffer.from(file.data, 'base64')
+          const workbook = XLSX.read(buffer, { type: 'buffer' })
+          const sheets: string[] = []
+          for (const sheetName of workbook.SheetNames) {
+            const sheet = workbook.Sheets[sheetName]
+            const csv = XLSX.utils.sheet_to_csv(sheet)
+            sheets.push(`## 시트: ${sheetName}\n${csv}`)
+          }
+          textParts.push(`[파일: ${file.name}]\n${sheets.join('\n\n')}`)
+        } catch (e) {
+          textParts.push(`[파일: ${file.name}] (엑셀 파싱 실패: ${e})`)
+        }
+      } else if (file.mediaType === 'text/csv' || file.mediaType.startsWith('text/')) {
+        // 텍스트/CSV → 디코딩 후 텍스트로 포함
+        const text = Buffer.from(file.data, 'base64').toString('utf-8')
+        textParts.push(`[파일: ${file.name}]\n${text}`)
+      } else {
+        textParts.push(`[파일: ${file.name}] (지원하지 않는 형식: ${file.mediaType})`)
+      }
+    }
+
+    // 텍스트 파일 내용 + 사용자 메시지를 하나의 텍스트 블록으로 결합
+    const combinedText = textParts.length > 0
+      ? `${textParts.join('\n\n---\n\n')}\n\n---\n\n${enrichedMessage}`
+      : enrichedMessage
+    contentBlocks.push({ type: 'text', text: combinedText })
+
+    // AsyncIterable<SDKUserMessage>로 변환
+    prompt = (async function* () {
+      yield {
+        type: 'user' as const,
+        message: { role: 'user' as const, content: contentBlocks },
+        parent_tool_use_id: null
+      }
+    })()
+  }
+
   let fullContent = ''
 
   try {
-    for await (const sdkMessage of query({ prompt: enrichedMessage, options: queryOptions })) {
+    for await (const sdkMessage of query({ prompt, options: queryOptions })) {
       // abort 또는 창 닫힘 시 즉시 루프 탈출
       if (abortSignal?.aborted || mainWindow.isDestroyed()) break
 

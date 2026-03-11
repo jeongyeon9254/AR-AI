@@ -17,11 +17,19 @@ export interface Session {
   updatedAt: string
 }
 
+export interface FileAttachmentInfo {
+  name: string
+  mediaType: string
+  /** base64 데이터 (이미지 미리보기용, 큰 파일은 생략) */
+  data?: string
+}
+
 export interface ChatMessage {
   id: string
   sessionId: string
   role: 'user' | 'assistant'
   content: string
+  attachments?: FileAttachmentInfo[]
   createdAt: string
 }
 
@@ -36,7 +44,8 @@ interface SessionState {
 
   init: () => Promise<void>
   selectAgent: (agentType: string) => Promise<void>
-  sendMessage: (content: string) => void
+  sendMessage: (content: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => void
+  clearChat: () => Promise<void>
   abortAgent: () => Promise<void>
   addStreamChunk: (chunk: any) => void
 }
@@ -90,18 +99,26 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ messages: result?.messages || [] })
   },
 
-  sendMessage: (content: string) => {
+  sendMessage: (content: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => {
     const { activeAgentType, agentSessions } = get()
     if (!activeAgentType) return
 
     const sessionId = agentSessions[activeAgentType]
     if (!sessionId) return
 
+    // UI 표시용 첨부파일 정보 (이미지만 data 포함, 나머지는 이름만)
+    const attachmentInfos: FileAttachmentInfo[] | undefined = attachments?.map((a) => ({
+      name: a.name,
+      mediaType: a.mediaType,
+      data: a.mediaType.startsWith('image/') ? a.data : undefined
+    }))
+
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       sessionId,
       role: 'user',
       content,
+      attachments: attachmentInfos,
       createdAt: new Date().toISOString()
     }
 
@@ -111,9 +128,20 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }))
 
     // IPC를 fire-and-forget으로 처리 — UI 블로킹 방지
-    window.electronAPI.sendMessage(sessionId, content).catch((err) => {
+    window.electronAPI.sendMessage(sessionId, content, attachments).catch((err) => {
       console.error('[sendMessage] IPC error:', err)
     })
+  },
+
+  clearChat: async () => {
+    const { activeAgentType, agentSessions } = get()
+    if (!activeAgentType) return
+
+    const sessionId = agentSessions[activeAgentType]
+    if (!sessionId) return
+
+    await window.electronAPI.clearMessages(sessionId)
+    set({ messages: [], streamingMessageId: null })
   },
 
   abortAgent: async () => {

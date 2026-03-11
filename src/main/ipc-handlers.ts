@@ -68,7 +68,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   // Chat - Claude Agent SDK 연동
-  ipcMain.handle('chat:send', async (_event, sessionId: string, message: string) => {
+  ipcMain.handle('chat:send', async (_event, sessionId: string, message: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => {
     try {
       // 세션 메타데이터만 조회 (메시지 로드 없이 — UI 블로킹 방지)
       const session = sessionManager.getSession(sessionId)
@@ -90,6 +90,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
         sessionId,
         agentType: session.agentType,
         message,
+        attachments,
         mainWindow,
         abortSignal: abortController.signal
       })
