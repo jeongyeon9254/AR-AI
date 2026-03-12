@@ -283,10 +283,15 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       })
       _cachedNodeBin = stdout.trim()
     } catch {
-      _cachedNodeBin = 'node'
-      for (const p of ['/usr/local/bin/node', '/opt/homebrew/bin/node']) {
+      _cachedNodeBin = process.execPath // Electron/Node 자체 경로를 기본값으로 사용
+      for (const p of ['/usr/local/bin/node', '/opt/homebrew/bin/node', `${process.env.HOME}/.nvm/versions/node/${process.version}/bin/node`]) {
         if (existsSync(p)) { _cachedNodeBin = p; break }
       }
+    }
+    // 절대 경로인데 파일이 없으면 process.execPath로 폴백
+    if (_cachedNodeBin !== 'node' && !existsSync(_cachedNodeBin)) {
+      console.warn('[AR-AI] Node binary not found at', _cachedNodeBin, '— falling back to process.execPath:', process.execPath)
+      _cachedNodeBin = process.execPath
     }
     console.log('[AR-AI] Node binary:', _cachedNodeBin)
   }
