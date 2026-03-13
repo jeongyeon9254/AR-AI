@@ -106,11 +106,20 @@ function buildAuth(): InstanceType<typeof google.auth.OAuth2> {
     throw new Error('Google Chat 인증이 필요합니다. 설정에서 "Google 로그인" 버튼을 눌러주세요.')
   }
 
+  if (!token.refresh_token) {
+    throw new Error('Google 인증 정보에 refresh_token이 없습니다. 설정에서 Google 계정을 다시 로그인해주세요.')
+  }
+
   client.setCredentials(token)
 
-  // 토큰 갱신 시 자동 저장
+  // 토큰 갱신 시 자동 저장 — null 값은 제외하여 refresh_token 보존
   client.on('tokens', (newTokens) => {
-    const merged = { ...token, ...newTokens }
+    const filtered: Record<string, any> = {}
+    for (const [k, v] of Object.entries(newTokens)) {
+      if (v !== null && v !== undefined) filtered[k] = v
+    }
+    const merged = { ...token, ...filtered }
+    console.log('[Google OAuth] Token refreshed, saving. hasRefreshToken:', !!merged.refresh_token)
     saveToken(merged)
   })
 
@@ -217,11 +226,12 @@ export function startOAuthFlow(): Promise<{ success: boolean; email?: string; er
 }
 
 /** 현재 인증 상태 확인 */
-export function getAuthStatus(): { authenticated: boolean; email?: string; tokenPath: string } {
+export function getAuthStatus(): { authenticated: boolean; email?: string; tokenPath: string; hasRefreshToken?: boolean } {
   const tokenPath = getTokenPath()
   const token = loadSavedToken()
   return {
-    authenticated: !!token,
+    authenticated: !!token && !!token.refresh_token,
+    hasRefreshToken: !!token?.refresh_token,
     tokenPath
   }
 }
