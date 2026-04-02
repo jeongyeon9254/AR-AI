@@ -9,7 +9,7 @@ import { app } from 'electron'
 import { AGENT_DEFINITIONS, ORCHESTRATOR_SYSTEM_PROMPT, SUB_AGENTS } from './definitions'
 import { getSettings, syncSkillFilesAsync } from '../config'
 import { getContextBoard } from '../context-board'
-import { SessionManager } from '../sessions'
+import { SessionManager, type KanbanStatus } from '../sessions'
 import { collectIssues, formatMessagesForAnalysis } from '../tools/google-chat'
 import { getFigmaAccessToken } from '../tools/figma-auth'
 import { runCriticAndArbitrator } from './consensus-pipeline'
@@ -377,14 +377,36 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   const sm = getSessionManager()
   const currentTodos = sm ? sm.listTodos(agentType) : []
   const todoContext = currentTodos.length > 0
-    ? `\n\n---\n📝 나의 Todo 목록:\n${currentTodos.map((t) => `- [${t.done ? 'x' : ' '}] ${t.content} (id: ${t.id})`).join('\n')}\n---`
+    ? `\n\n---\n📝 나의 Todo 목록:\n${currentTodos.map((t) => `- [${t.done ? 'x' : ' '}] [${t.kanbanStatus}] ${t.content} (id: ${t.id})`).join('\n')}\n---`
     : ''
 
-  const todoInstruction = `\n\nTodo 관리: 응답 끝에 다음 명령을 사용하여 할 일을 관리할 수 있습니다.
-[TODO:ADD] 할 일 내용
-[TODO:DONE] todo-id
-[TODO:DELETE] todo-id
-여러 개를 동시에 사용할 수 있습니다. 필요할 때만 사용하세요.`
+  // 세션에서 그룹명 조회
+  const sessionForGroup = sm?.getSession(sessionId)
+  const projectForGroup = sessionForGroup?.projectId
+    ? sm?.getProjectById(sessionForGroup.projectId)
+    : null
+  const groupContext = projectForGroup
+    ? `\n\n## 현재 그룹\n당신은 **"${projectForGroup.name}"** 그룹에 속한 에이전트입니다. 이 그룹의 컨텍스트 내에서 작업하세요.`
+    : ''
+
+  const todoInstruction = `\n\n## Todo 명령 규칙 (반드시 준수)
+
+모든 작업은 반드시 아래 워크플로우를 따르세요:
+1. **작업 시작 전** → [TODO:ADD] 로 태스크 생성 (대기 상태)
+2. **작업 시작 시** → [TODO:STATUS] id 진행중
+3. **작업 완료 시** → [TODO:STATUS] id 검토중 (사용자 컨펌 대기)
+4. **컨펌 후**      → [TODO:DONE] id (완료)
+
+명령 형식:
+[TODO:ADD] 제목(최대100자) | 본문(최대1000자, 선택)   ← 태스크 생성
+[TODO:STATUS] todo-id 진행중                          ← 상태 변경 (대기/진행중/검토중/완료)
+[TODO:DONE] todo-id                                   ← 완료 처리
+[TODO:DELETE] todo-id                                 ← 삭제
+
+명령 없이 "생성했습니다"라고만 답하면 실제로 저장되지 않으므로 금지.
+
+예시:
+[TODO:ADD] 로그인 기능 구현 | JWT 토큰 기반 인증 구현, 세션 관리 및 리프레시 토큰 처리 포함`
 
   // 스킬 파일 동기화 + 설정 로드
   await syncSkillFilesAsync()
@@ -468,10 +490,10 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     : ''
 
   if (isOrchestrator) {
-    queryOptions.systemPrompt = ORCHESTRATOR_SYSTEM_PROMPT + sharedContext + todoContext + todoInstruction
+    queryOptions.systemPrompt = ORCHESTRATOR_SYSTEM_PROMPT + groupContext + sharedContext + todoContext + todoInstruction
     queryOptions.agents = AGENT_DEFINITIONS
   } else if (agentDef) {
-    queryOptions.systemPrompt = agentDef.prompt + worktreeContext + mcpEnvironmentContext + skillContext + sharedContext + todoContext + todoInstruction
+    queryOptions.systemPrompt = agentDef.prompt + worktreeContext + mcpEnvironmentContext + skillContext + groupContext + sharedContext + todoContext + todoInstruction
     // MCP 서버가 할당된 경우 allowedTools를 설정하지 않음 (MCP 도구가 mcp__서버명__도구명 패턴이라 화이트리스트로 차단됨)
     // MCP가 없으면 기존대로 allowedTools로 제한
     if (Object.keys(mcpServersConfig).length > 0) {
@@ -695,10 +717,7 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     const summary = extractSummary(message, fullContent)
     contextBoard.add(agentType, summary)
 
-    // Todo 명령 파싱 및 실행
-    if (!mainWindow.isDestroyed()) {
-      processTodoCommands(agentType, fullContent, mainWindow)
-    }
+    // Todo 명령 파싱은 ipc-handlers.ts에서 최종 합산 콘텐츠 기준으로 1회 실행
   }
 
   // ── Consensus: Stage 1 완료 → Stage 2/3 실행 ─────────────────────────
@@ -736,23 +755,43 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
   return stage1Content
 }
 
+/** 에이전트 응답에서 [TODO:*] 명령을 파싱하여 실행 (외부 노출용 래퍼) */
+export function processTodoCommandsPublic(agentType: string, content: string, mainWindow: BrowserWindow, projectId = ''): void {
+  processTodoCommands(agentType, content, mainWindow, projectId)
+}
+
 /** 에이전트 응답에서 [TODO:*] 명령을 파싱하여 실행 */
-function processTodoCommands(agentType: string, content: string, mainWindow: BrowserWindow): void {
+function processTodoCommands(agentType: string, content: string, mainWindow: BrowserWindow, projectId = ''): void {
   const sm = getSessionManager()
   if (!sm) return
   let changed = false
 
-  // [TODO:ADD] 내용
+  // [TODO:ADD] 제목 | 본문(선택)
   const addMatches = content.matchAll(/\[TODO:ADD\]\s*(.+)/g)
   for (const m of addMatches) {
-    sm.createTodo(agentType, m[1].trim())
+    const raw = m[1].trim()
+    const pipeIdx = raw.indexOf('|')
+    const title = (pipeIdx >= 0 ? raw.slice(0, pipeIdx).trim() : raw).slice(0, 100)
+    const body = (pipeIdx >= 0 ? raw.slice(pipeIdx + 1).trim() : '').slice(0, 1000)
+    sm.createTodo(agentType, title, projectId, body)
     changed = true
   }
 
-  // [TODO:DONE] id
+  // [TODO:STATUS] id 상태값
+  const statusMatches = content.matchAll(/\[TODO:STATUS\]\s*(\S+)\s+(\S+)/g)
+  for (const m of statusMatches) {
+    const validStatuses: KanbanStatus[] = ['대기', '진행중', '검토중', '완료']
+    const newStatus = m[2].trim() as KanbanStatus
+    if (validStatuses.includes(newStatus)) {
+      sm.updateTodo(m[1].trim(), { kanbanStatus: newStatus })
+      changed = true
+    }
+  }
+
+  // [TODO:DONE] id — 완료 처리
   const doneMatches = content.matchAll(/\[TODO:DONE\]\s*(\S+)/g)
   for (const m of doneMatches) {
-    sm.updateTodo(m[1].trim(), { done: true })
+    sm.updateTodo(m[1].trim(), { done: true, kanbanStatus: '완료' })
     changed = true
   }
 

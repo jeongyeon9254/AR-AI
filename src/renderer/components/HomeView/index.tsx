@@ -4,7 +4,7 @@ import { useUIStore } from '../../stores/useUIStore'
 import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
 
 export function HomeView(): JSX.Element {
-  const { projects, loadProjects, createProject, deleteProject, loadProjectTodos, projectTodos, updateTodoKanban } = useProjectStore()
+  const { projects, loadProjects, createProject, deleteProject, loadProjectTodos, projectTodos, updateTodoKanban, deleteTodo } = useProjectStore()
   const { setViewMode } = useUIStore()
   const { initProject, selectAgent, loadingAgents, agentSessions } = useSessionStore()
   const [showCreate, setShowCreate] = useState(false)
@@ -48,7 +48,7 @@ export function HomeView(): JSX.Element {
 
   const handleDeleteProject = async (id: string, e: React.MouseEvent): Promise<void> => {
     e.stopPropagation()
-    if (!confirm('프로젝트를 삭제하시겠습니까? 모든 채팅 기록이 삭제됩니다.')) return
+    if (!confirm('그룹을 삭제하시겠습니까? 모든 채팅 기록이 삭제됩니다.')) return
     await deleteProject(id)
     setExpandedProjects((prev) => { const s = new Set(prev); s.delete(id); return s })
   }
@@ -108,7 +108,7 @@ export function HomeView(): JSX.Element {
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
-            <span>프로젝트 추가</span>
+            <span>그룹 추가</span>
           </button>
         </div>
       </header>
@@ -131,6 +131,7 @@ export function HomeView(): JSX.Element {
                 onDelete={(e) => handleDeleteProject(project.id, e)}
                 onOpenChat={(agentType) => handleOpenChat(project, agentType)}
                 onUpdateTodoKanban={(todoId, status) => updateTodoKanban(todoId, project.id, status)}
+                onDeleteTodo={(todoId) => deleteTodo(todoId, project.id)}
               />
             ))}
           </div>
@@ -169,10 +170,10 @@ function EmptyState({ onAdd }: { onAdd: () => void }): JSX.Element {
           </svg>
         </div>
         <p className="text-base font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-          아직 프로젝트가 없습니다
+          아직 그룹이 없습니다
         </p>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          새 프로젝트를 만들어 AI 에이전트와<br />협업을 시작하세요
+          새 그룹을 만들어 AI 에이전트와<br />협업을 시작하세요
         </p>
       </div>
       <button
@@ -191,7 +192,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }): JSX.Element {
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
         </svg>
-        <span>프로젝트 추가하기</span>
+        <span>그룹 추가하기</span>
       </button>
     </div>
   )
@@ -217,13 +218,13 @@ function CreateProjectModal({ value, onChange, onSubmit, onClose, creating }: {
           boxShadow: '0 24px 64px rgba(0,0,0,0.6)'
         }}
       >
-        <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--text-primary)' }}>새 프로젝트</h2>
+        <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--text-primary)' }}>새 그룹</h2>
         <input
           autoFocus
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') onSubmit(); if (e.key === 'Escape') onClose() }}
-          placeholder="프로젝트 이름을 입력하세요"
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit() } if (e.key === 'Escape') onClose() }}
+          placeholder="그룹 이름을 입력하세요"
           className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-5"
           style={{
             background: 'var(--bg-input)',
@@ -269,15 +270,15 @@ function CreateProjectModal({ value, onChange, onSubmit, onClose, creating }: {
 // ── 프로젝트 카드 + 칸반보드 ──────────────────────────────────────
 
 const KANBAN_COLUMNS: { status: KanbanStatus; label: string; color: string }[] = [
-  { status: '대기', label: '대기', color: '#6b7280' },
-  { status: '진행', label: '진행', color: '#60a5fa' },
-  { status: '검토', label: '검토', color: '#fbbf24' },
-  { status: '완료', label: '완료', color: '#34d399' }
+  { status: '대기',   label: '대기',   color: '#6b7280' },
+  { status: '진행중', label: '진행중', color: '#60a5fa' },
+  { status: '검토중', label: '검토중', color: '#fbbf24' },
+  { status: '완료',   label: '완료',   color: '#34d399' }
 ]
 
 const KANBAN_AGENTS = AGENT_TYPES.filter((a) => ['fe-developer', 'be-developer', 'qa-expert', 'po', 'issue-collector'].includes(a.id))
 
-function ProjectCard({ project, expanded, todos, loadingAgents, agentSessions, onToggle, onDelete, onOpenChat, onUpdateTodoKanban }: {
+function ProjectCard({ project, expanded, todos, loadingAgents, agentSessions, onToggle, onDelete, onOpenChat, onUpdateTodoKanban, onDeleteTodo }: {
   project: Project
   expanded: boolean
   todos: KanbanTodo[]
@@ -287,6 +288,7 @@ function ProjectCard({ project, expanded, todos, loadingAgents, agentSessions, o
   onDelete: (e: React.MouseEvent) => void
   onOpenChat: (agentType: string) => void
   onUpdateTodoKanban: (todoId: string, status: KanbanStatus) => void
+  onDeleteTodo: (todoId: string) => void
 }): JSX.Element {
   const [hovered, setHovered] = useState(false)
 
@@ -376,17 +378,18 @@ function ProjectCard({ project, expanded, todos, loadingAgents, agentSessions, o
       {/* 칸반보드 */}
       {expanded && (
         <div className="overflow-x-auto" style={{ borderTop: '1px solid var(--border-color)' }}>
-          <KanbanBoard todos={todos} onUpdateStatus={onUpdateTodoKanban} onOpenChat={onOpenChat} />
+          <KanbanBoard todos={todos} onUpdateStatus={onUpdateTodoKanban} onOpenChat={onOpenChat} onDeleteTodo={onDeleteTodo} />
         </div>
       )}
     </div>
   )
 }
 
-function KanbanBoard({ todos, onUpdateStatus, onOpenChat }: {
+function KanbanBoard({ todos, onUpdateStatus, onOpenChat, onDeleteTodo }: {
   todos: KanbanTodo[]
   onUpdateStatus: (todoId: string, status: KanbanStatus) => void
   onOpenChat: (agentType: string) => void
+  onDeleteTodo: (todoId: string) => void
 }): JSX.Element {
   return (
     <div className="p-5">
@@ -452,7 +455,7 @@ function KanbanBoard({ todos, onUpdateStatus, onOpenChat }: {
                     }}
                   >
                     {colTodos.map((todo) => (
-                      <KanbanCard key={todo.id} todo={todo} />
+                      <KanbanCard key={todo.id} todo={todo} onDelete={() => onDeleteTodo(todo.id)} />
                     ))}
                   </div>
                 )
@@ -465,29 +468,135 @@ function KanbanBoard({ todos, onUpdateStatus, onOpenChat }: {
   )
 }
 
-function KanbanCard({ todo }: { todo: KanbanTodo }): JSX.Element {
+function KanbanCard({ todo, onDelete }: { todo: KanbanTodo; onDelete: () => void }): JSX.Element {
+  const [showModal, setShowModal] = useState(false)
+
+  return (
+    <>
+      <div
+        draggable
+        onDragStart={(e) => e.dataTransfer.setData('todoId', todo.id)}
+        onClick={() => setShowModal(true)}
+        className="rounded-lg px-3 py-2 mb-1.5 text-xs cursor-pointer transition-all"
+        style={{
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-color)',
+          color: 'var(--text-secondary)',
+          lineHeight: '1.5'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = 'var(--border-strong)'
+          e.currentTarget.style.color = 'var(--text-primary)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = 'var(--border-color)'
+          e.currentTarget.style.color = 'var(--text-secondary)'
+        }}
+      >
+        <p className="line-clamp-2">{todo.content}</p>
+      </div>
+      {showModal && (
+        <TodoDetailModal
+          todo={todo}
+          onClose={() => setShowModal(false)}
+          onDelete={() => { onDelete(); setShowModal(false) }}
+        />
+      )}
+    </>
+  )
+}
+
+function TodoDetailModal({ todo, onClose, onDelete }: {
+  todo: KanbanTodo
+  onClose: () => void
+  onDelete: () => void
+}): JSX.Element {
   return (
     <div
-      draggable
-      onDragStart={(e) => e.dataTransfer.setData('todoId', todo.id)}
-      className="rounded-lg px-3 py-2 mb-1.5 text-xs cursor-grab active:cursor-grabbing transition-all"
-      style={{
-        background: 'var(--bg-elevated)',
-        border: '1px solid var(--border-color)',
-        color: 'var(--text-secondary)',
-        lineHeight: '1.5'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border-strong)'
-        e.currentTarget.style.color = 'var(--text-primary)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border-color)'
-        e.currentTarget.style.color = 'var(--text-secondary)'
-      }}
-      title={todo.content}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
     >
-      <p className="line-clamp-2">{todo.content}</p>
+      <div
+        className="rounded-2xl p-6 w-[480px] flex flex-col shadow-2xl"
+        style={{
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-strong)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+          maxHeight: '70vh'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 헤더 */}
+        <div className="flex items-start justify-between mb-3 flex-shrink-0">
+          <h3
+            className="text-sm font-semibold leading-relaxed flex-1 pr-4"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {todo.content}
+          </h3>
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-md transition-all"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* 메타 */}
+        <div className="flex items-center gap-2 mb-4 flex-shrink-0">
+          <span
+            className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+            style={{ background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}
+          >
+            {todo.kanbanStatus}
+          </span>
+          <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+            {todo.agentType}
+          </span>
+        </div>
+
+        {/* 본문 */}
+        {todo.body ? (
+          <div
+            className="overflow-y-auto rounded-xl p-3 mb-4 text-xs leading-relaxed"
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-secondary)',
+              whiteSpace: 'pre-wrap',
+              minHeight: '80px',
+              maxHeight: '300px',
+              flexShrink: 1,
+              overflowY: 'auto'
+            }}
+          >
+            {todo.body}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center mb-4 py-6 flex-shrink-0">
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>상세 내용 없음</span>
+          </div>
+        )}
+
+        {/* 푸터 */}
+        <div className="flex justify-end flex-shrink-0">
+          <button
+            onClick={onDelete}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{ color: 'var(--danger)', background: 'transparent', border: '1px solid rgba(248,113,113,0.2)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.2)' }}
+          >
+            삭제
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

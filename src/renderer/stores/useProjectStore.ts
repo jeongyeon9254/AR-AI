@@ -7,13 +7,14 @@ export interface Project {
   updatedAt: string
 }
 
-export type KanbanStatus = '대기' | '진행' | '검토' | '완료'
+export type KanbanStatus = '대기' | '진행중' | '검토중' | '완료'
 
 export interface KanbanTodo {
   id: string
   agentType: string
   projectId: string
   content: string
+  body: string
   done: boolean
   kanbanStatus: KanbanStatus
   createdAt: string
@@ -31,6 +32,7 @@ interface ProjectState {
   setActiveProject: (id: string | null) => void
   loadProjectTodos: (projectId: string) => Promise<void>
   updateTodoKanban: (todoId: string, projectId: string, kanbanStatus: KanbanStatus) => Promise<void>
+  deleteTodo: (todoId: string, projectId: string) => Promise<void>
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -74,6 +76,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         [projectId]: (state.projectTodos[projectId] || []).map((t) =>
           t.id === todoId ? { ...t, kanbanStatus } : t
         )
+      }
+    }))
+  },
+
+  deleteTodo: async (todoId: string, projectId: string) => {
+    await window.electronAPI.deleteTodo(todoId)
+    set((state) => ({
+      projectTodos: {
+        ...state.projectTodos,
+        [projectId]: (state.projectTodos[projectId] || []).filter((t) => t.id !== todoId)
       }
     }))
   }

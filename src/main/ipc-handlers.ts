@@ -3,7 +3,7 @@ import { SessionManager } from './sessions'
 import { getSettings, updateSettings, validateWorkspace } from './config'
 import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync, watch, FSWatcher } from 'fs'
 import { join, basename } from 'path'
-import { runAgent, setAgentSessionManager, resetSdkSession } from './agents'
+import { runAgent, setAgentSessionManager, resetSdkSession, processTodoCommandsPublic } from './agents'
 import {
   collectIssues, formatIssueReport, formatMessagesForAnalysis,
   startOAuthFlow, getAuthStatus, clearAuth,
@@ -135,6 +135,9 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
           sessionManager.addMessage(sessionId, 'assistant', assistantContent)
           // 세션당 최대 500개 메시지 유지 (자동 정리)
           sessionManager.pruneMessages(sessionId, 500)
+          // 최종 합산 콘텐츠(Stage 1+2+3)에서 TODO 명령 재파싱 — Stage 3에서 추가된 명령 반영
+          const projectId = sessionManager.getSession(sessionId)?.projectId || ''
+          processTodoCommandsPublic(session.agentType, assistantContent, mainWindow, projectId)
           // 로딩 상태 동기화 보장 — runAgent 내부에서 done:true를 못 보낸 경우 커버
           if (!mainWindow.isDestroyed()) {
             mainWindow.webContents.send('chat:agent-done', { sessionId })
@@ -217,8 +220,8 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   // Todo management
-  ipcMain.handle('todo:create', (_event, agentType: string, content: string, projectId?: string) => {
-    return sessionManager.createTodo(agentType, content, projectId)
+  ipcMain.handle('todo:create', (_event, agentType: string, content: string, projectId?: string, body?: string) => {
+    return sessionManager.createTodo(agentType, content, projectId ?? '', body ?? '')
   })
 
   ipcMain.handle('todo:list', (_event, agentType: string) => {
@@ -229,7 +232,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return sessionManager.listAllTodos()
   })
 
-  ipcMain.handle('todo:update', (_event, id: string, updates: { content?: string; done?: boolean; kanbanStatus?: string }) => {
+  ipcMain.handle('todo:update', (_event, id: string, updates: { content?: string; body?: string; done?: boolean; kanbanStatus?: string }) => {
     return sessionManager.updateTodo(id, updates as any)
   })
 

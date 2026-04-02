@@ -23,10 +23,10 @@ export interface ElectronAPI {
   getStorageInfo: () => Promise<{ dbSizeBytes: number; dbSizeMB: string }>
   clearMessages: (sessionId: string) => Promise<{ deleted: number }>
   pruneMessages: (sessionId: string, keepCount: number) => Promise<{ deleted: number }>
-  createTodo: (agentType: string, content: string) => Promise<any>
+  createTodo: (agentType: string, content: string, projectId?: string, body?: string) => Promise<any>
   listTodos: (agentType: string) => Promise<any[]>
   listAllTodos: () => Promise<any[]>
-  updateTodo: (id: string, updates: { content?: string; done?: boolean }) => Promise<any>
+  updateTodo: (id: string, updates: { content?: string; body?: string; done?: boolean; kanbanStatus?: string }) => Promise<any>
   deleteTodo: (id: string) => Promise<boolean>
   onTodoUpdated: (callback: (data: { agentType: string }) => void) => () => void
   onSprintChanged: (callback: (data: { fileName: string }) => void) => () => void
@@ -89,11 +89,11 @@ const api: ElectronAPI = {
   clearMessages: (sessionId: string) => ipcRenderer.invoke('storage:clear-messages', sessionId),
   pruneMessages: (sessionId: string, keepCount: number) =>
     ipcRenderer.invoke('storage:prune-messages', sessionId, keepCount),
-  createTodo: (agentType: string, content: string) =>
-    ipcRenderer.invoke('todo:create', agentType, content),
+  createTodo: (agentType: string, content: string, projectId?: string, body?: string) =>
+    ipcRenderer.invoke('todo:create', agentType, content, projectId, body),
   listTodos: (agentType: string) => ipcRenderer.invoke('todo:list', agentType),
   listAllTodos: () => ipcRenderer.invoke('todo:list-all'),
-  updateTodo: (id: string, updates: { content?: string; done?: boolean }) =>
+  updateTodo: (id: string, updates: { content?: string; body?: string; done?: boolean; kanbanStatus?: string }) =>
     ipcRenderer.invoke('todo:update', id, updates),
   deleteTodo: (id: string) => ipcRenderer.invoke('todo:delete', id),
   onTodoUpdated: (callback: (data: { agentType: string }) => void) => {
