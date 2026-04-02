@@ -285,7 +285,12 @@ export function getSettings(): AppSettings {
 
 export function updateSettings(partial: Partial<AppSettings>): AppSettings {
   const current = getSettings()
-  const updated = { ...current, ...partial }
+  // 문자열 값의 제어문자 제거
+  // eslint-disable-next-line no-control-regex
+  const sanitized = Object.fromEntries(
+    Object.entries(partial).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/[\x00-\x1F\x7F]/g, '').trim() : v])
+  ) as Partial<AppSettings>
+  const updated = { ...current, ...sanitized }
   writeFileSync(getSettingsPath(), JSON.stringify(updated, null, 2))
   invalidateSettingsCache()
   return updated

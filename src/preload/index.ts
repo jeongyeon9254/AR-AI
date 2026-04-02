@@ -1,5 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+export interface ConsensusStageEvent {
+  sessionId: string
+  stage: 1 | 2 | 3
+  status: 'running' | 'done' | 'error'
+  stageName: string
+  model: string
+}
+
 export interface ElectronAPI {
   createSession: (agentType: string) => Promise<any>
   listSessions: () => Promise<any[]>
@@ -9,6 +17,9 @@ export interface ElectronAPI {
   abortMessage: (sessionId: string) => Promise<any>
   onStreamChunk: (callback: (chunk: any) => void) => () => void
   onAuthStatus: (callback: (status: any) => void) => () => void
+  onConsensusStage: (callback: (event: ConsensusStageEvent) => void) => () => void
+  onAgentDone: (callback: (data: { sessionId: string }) => void) => () => void
+  isAgentRunning: (sessionId: string) => Promise<boolean>
   getStorageInfo: () => Promise<{ dbSizeBytes: number; dbSizeMB: string }>
   clearMessages: (sessionId: string) => Promise<{ deleted: number }>
   pruneMessages: (sessionId: string, keepCount: number) => Promise<{ deleted: number }>
@@ -30,6 +41,15 @@ export interface ElectronAPI {
   googleAuthStatus: () => Promise<{ authenticated: boolean; email?: string; tokenPath: string }>
   googleLogin: () => Promise<{ success: boolean; email?: string; error?: string }>
   googleLogout: () => Promise<{ success: boolean }>
+  figmaAuthStatus: () => Promise<{ authenticated: boolean; email?: string }>
+  figmaLogin: () => Promise<{ success: boolean; email?: string; error?: string }>
+  figmaLogout: () => Promise<{ success: boolean }>
+  // Project management
+  createProject: (name: string) => Promise<{ project: any; sessions: any[] }>
+  listProjects: () => Promise<any[]>
+  deleteProject: (id: string) => Promise<boolean>
+  getProjectSessions: (projectId: string) => Promise<any[]>
+  getProjectTodos: (projectId: string) => Promise<any[]>
 }
 
 const api: ElectronAPI = {
@@ -54,6 +74,17 @@ const api: ElectronAPI = {
       ipcRenderer.removeListener('chat:auth-status', handler)
     }
   },
+  onConsensusStage: (callback: (event: ConsensusStageEvent) => void) => {
+    const handler = (_event: any, data: ConsensusStageEvent): void => callback(data)
+    ipcRenderer.on('chat:consensus-stage', handler)
+    return () => { ipcRenderer.removeListener('chat:consensus-stage', handler) }
+  },
+  onAgentDone: (callback: (data: { sessionId: string }) => void) => {
+    const handler = (_event: any, data: { sessionId: string }): void => callback(data)
+    ipcRenderer.on('chat:agent-done', handler)
+    return () => { ipcRenderer.removeListener('chat:agent-done', handler) }
+  },
+  isAgentRunning: (sessionId: string) => ipcRenderer.invoke('chat:is-running', sessionId),
   getStorageInfo: () => ipcRenderer.invoke('storage:info'),
   clearMessages: (sessionId: string) => ipcRenderer.invoke('storage:clear-messages', sessionId),
   pruneMessages: (sessionId: string, keepCount: number) =>
@@ -86,7 +117,15 @@ const api: ElectronAPI = {
     ipcRenderer.invoke('report:generate', options),
   googleAuthStatus: () => ipcRenderer.invoke('google:auth-status'),
   googleLogin: () => ipcRenderer.invoke('google:login'),
-  googleLogout: () => ipcRenderer.invoke('google:logout')
+  googleLogout: () => ipcRenderer.invoke('google:logout'),
+  figmaAuthStatus: () => ipcRenderer.invoke('figma:auth-status'),
+  figmaLogin: () => ipcRenderer.invoke('figma:login'),
+  figmaLogout: () => ipcRenderer.invoke('figma:logout'),
+  createProject: (name: string) => ipcRenderer.invoke('project:create', name),
+  listProjects: () => ipcRenderer.invoke('project:list'),
+  deleteProject: (id: string) => ipcRenderer.invoke('project:delete', id),
+  getProjectSessions: (projectId: string) => ipcRenderer.invoke('project:sessions', projectId),
+  getProjectTodos: (projectId: string) => ipcRenderer.invoke('project:todos', projectId)
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)

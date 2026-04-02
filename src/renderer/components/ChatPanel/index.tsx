@@ -5,6 +5,85 @@ import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
 import type { ChatMessage, FileAttachmentInfo } from '../../stores/useSessionStore'
 import { useUIStore } from '../../stores/useUIStore'
 import { useSettingsStore } from '../../stores/useSettingsStore'
+import { useProjectStore } from '../../stores/useProjectStore'
+import type { ConsensusStageEvent } from '../../../preload/index'
+
+interface ConsensusStageState {
+  stage: 1 | 2 | 3
+  status: 'running' | 'done' | 'error'
+  stageName: string
+  model: string
+}
+
+const CONSENSUS_STAGE_LABELS: Record<number, { icon: string; color: string }> = {
+  1: { icon: '⬡', color: '#a78bfa' },
+  2: { icon: '⬡', color: '#60a5fa' },
+  3: { icon: '⬡', color: '#34d399' }
+}
+
+function ConsensusProgress({ stages }: { stages: ConsensusStageState[] }): JSX.Element {
+  return (
+    <div
+      className="flex items-center gap-3 px-3 py-2 rounded-xl mb-3 text-xs"
+      style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.12)' }}
+    >
+      <span className="font-medium flex-shrink-0" style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.08em' }}>
+        3-MODEL CONSENSUS
+      </span>
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        {([1, 2, 3] as const).map((stageNum) => {
+          const stageInfo = stages.find((s) => s.stage === stageNum)
+          const meta = CONSENSUS_STAGE_LABELS[stageNum]
+          const isRunning = stageInfo?.status === 'running'
+          const isDone = stageInfo?.status === 'done'
+          const isError = stageInfo?.status === 'error'
+          const isPending = !stageInfo
+
+          const stageNames: Record<number, string> = {
+            1: 'Proposer',
+            2: "Devil's Advocate",
+            3: 'Arbitrator'
+          }
+
+          return (
+            <div key={stageNum} className="flex items-center gap-1.5">
+              {stageNum > 1 && (
+                <div
+                  className="w-4 h-px flex-shrink-0"
+                  style={{ background: isDone || isError ? meta.color : 'var(--border-color)', opacity: 0.5 }}
+                />
+              )}
+              <div className="flex items-center gap-1">
+                <span
+                  className="text-[11px]"
+                  style={{
+                    color: isDone ? meta.color : isRunning ? meta.color : isError ? '#f87171' : 'var(--text-muted)',
+                    opacity: isPending ? 0.35 : 1,
+                    animation: isRunning ? 'shimmer 1.2s ease-in-out infinite' : 'none'
+                  }}
+                >
+                  {isError ? '✕' : isDone ? '✓' : meta.icon}
+                </span>
+                <span
+                  style={{
+                    color: isDone ? meta.color : isRunning ? meta.color : isError ? '#f87171' : 'var(--text-muted)',
+                    opacity: isPending ? 0.35 : 1,
+                    fontWeight: isRunning || isDone ? '600' : '400'
+                  }}
+                >
+                  {stageNames[stageNum]}
+                  {isRunning && (
+                    <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}> 진행 중...</span>
+                  )}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 interface PendingFile {
   name: string
@@ -78,9 +157,18 @@ function getDateKey(dateStr: string): string {
 
 function DateDivider({ label }: { label: string }): JSX.Element {
   return (
-    <div className="flex items-center gap-3 py-2">
+    <div className="flex items-center gap-4 py-3">
       <div className="flex-1 h-px" style={{ background: 'var(--border-color)' }} />
-      <span className="text-xs px-2" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span
+        className="text-[11px] px-3 py-1 rounded-full font-medium"
+        style={{
+          color: 'var(--text-muted)',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-color)'
+        }}
+      >
+        {label}
+      </span>
       <div className="flex-1 h-px" style={{ background: 'var(--border-color)' }} />
     </div>
   )
@@ -96,18 +184,30 @@ const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
       {showDate && <DateDivider label={formatDateLabel(msg.createdAt)} />}
       <div className={msg.role === 'user' ? 'flex justify-end' : ''}>
         {msg.role === 'assistant' && (
-          <div className="flex gap-3 items-start">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
-              style={{ background: 'var(--accent)', color: '#fff' }}>
+          <div className="flex gap-3.5 items-start">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
+              style={{
+                background: 'var(--accent-dim)',
+                border: '1px solid rgba(167,139,250,0.25)',
+                color: 'var(--accent)'
+              }}
+            >
               {agentIcon}
             </div>
-            <div className="chat-markdown text-sm leading-relaxed pt-1 min-w-0"
-              style={{ color: 'var(--text-primary)' }}>
+            <div
+              className="chat-markdown text-sm leading-relaxed pt-1 min-w-0"
+              style={{ color: 'var(--text-primary)' }}
+            >
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
                   a: ({ href, children }) => (
-                    <a href={href} onClick={(e) => { e.preventDefault(); if (href) window.open(href, '_blank') }} style={{ color: 'var(--accent)', cursor: 'pointer' }}>
+                    <a
+                      href={href}
+                      onClick={(e) => { e.preventDefault(); if (href) window.open(href, '_blank') }}
+                      style={{ color: 'var(--accent)', cursor: 'pointer' }}
+                    >
                       {children}
                     </a>
                   )
@@ -117,18 +217,32 @@ const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
           </div>
         )}
         {msg.role === 'user' && (
-          <div className="inline-block px-4 py-2.5 rounded-2xl text-sm max-w-[80%]"
-            style={{ background: 'var(--bg-user-msg)', color: 'var(--text-primary)' }}>
+          <div
+            className="inline-block px-4 py-3 text-sm max-w-[80%]"
+            style={{
+              background: 'var(--bg-user-msg)',
+              color: 'var(--text-primary)',
+              borderRadius: '16px',
+              border: '1px solid rgba(167,139,250,0.12)',
+              lineHeight: '1.65'
+            }}
+          >
             {msg.attachments && msg.attachments.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-2 mb-2.5">
                 {msg.attachments.map((att, i) =>
                   att.data && att.mediaType.startsWith('image/') ? (
-                    <img key={i} src={`data:${att.mediaType};base64,${att.data}`}
+                    <img
+                      key={i}
+                      src={`data:${att.mediaType};base64,${att.data}`}
                       alt={att.name}
-                      className="max-w-[200px] max-h-[150px] rounded-lg object-cover" />
+                      className="max-w-[200px] max-h-[150px] rounded-xl object-cover"
+                    />
                   ) : (
-                    <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs"
-                      style={{ background: 'rgba(255,255,255,0.1)' }}>
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs"
+                      style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
                       {getFileIcon(att.mediaType)} {att.name}
                     </span>
                   )
@@ -147,24 +261,29 @@ export function ChatPanel(): JSX.Element {
   const [input, setInput] = useState('')
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
+  const [inputFocused, setInputFocused] = useState(false)
   const [authStatus, setAuthStatus] = useState<{ isAuthenticating: boolean; message: string } | null>(null)
+  const [consensusStages, setConsensusStages] = useState<ConsensusStageState[]>([])
   const activeAgentType = useSessionStore((s) => s.activeAgentType)
+  const activeProjectId = useSessionStore((s) => s.activeProjectId)
   const messages = useSessionStore((s) => s.messages)
   const sendMessage = useSessionStore((s) => s.sendMessage)
   const clearChat = useSessionStore((s) => s.clearChat)
   const abortAgent = useSessionStore((s) => s.abortAgent)
   const addStreamChunk = useSessionStore((s) => s.addStreamChunk)
-  // 현재 에이전트의 로딩 상태만 구독 (boolean 값)
+  const selectAgent = useSessionStore((s) => s.selectAgent)
   const isLoading = useSessionStore((s) =>
-    s.activeAgentType ? !!s.loadingAgents[s.activeAgentType] : false
+    s.activeSessionId ? !!s.loadingAgents[s.activeSessionId] : false
   )
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { toggleTodo, todoOpen } = useUIStore()
+  const { toggleTodo, todoOpen, goHome } = useUIStore()
   const { workspaceStatus, validateWorkspace } = useSettingsStore()
   const agentInfo = AGENT_TYPES.find((a) => a.id === activeAgentType)
+  const { projects } = useProjectStore()
+  const activeProject = projects.find((p) => p.id === activeProjectId)
 
   useEffect(() => {
     validateWorkspace()
@@ -173,6 +292,10 @@ export function ChatPanel(): JSX.Element {
   useEffect(() => {
     const unsubStream = window.electronAPI.onStreamChunk((chunk) => {
       addStreamChunk(chunk)
+      // 스트리밍 완료 시 consensus 진행 상황 초기화
+      if (chunk.done) {
+        setConsensusStages([])
+      }
     })
     const unsubAuth = window.electronAPI.onAuthStatus((status) => {
       setAuthStatus(status)
@@ -180,9 +303,23 @@ export function ChatPanel(): JSX.Element {
         setTimeout(() => setAuthStatus(null), 3000)
       }
     })
+    const unsubConsensus = window.electronAPI.onConsensusStage((event: ConsensusStageEvent) => {
+      setConsensusStages((prev) => {
+        const filtered = prev.filter((s) => s.stage !== event.stage)
+        return [...filtered, { stage: event.stage, status: event.status, stageName: event.stageName, model: event.model }]
+          .sort((a, b) => a.stage - b.stage)
+      })
+    })
+    // 에이전트 완료 이벤트 — consensus UI 초기화 (로딩 상태 해제는 App.tsx 전역 리스너가 담당)
+    const unsubAgentDone = window.electronAPI.onAgentDone(() => {
+      setConsensusStages([])
+    })
+
     return () => {
       unsubStream()
       unsubAuth()
+      unsubConsensus()
+      unsubAgentDone()
     }
   }, [])
 
@@ -220,6 +357,7 @@ export function ChatPanel(): JSX.Element {
       : undefined
     setInput('')
     setPendingFiles([])
+    setConsensusStages([])
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     sendMessage(msg, attachments)
   }
@@ -284,9 +422,21 @@ export function ChatPanel(): JSX.Element {
   if (!activeAgentType) {
     return (
       <main className="flex-1 flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
-        <div className="text-center" style={{ color: 'var(--text-muted)' }}>
-          <p className="text-3xl mb-3" style={{ color: 'var(--text-secondary)' }}>AR-AI</p>
-          <p className="text-sm">좌측에서 에이전트를 선택하여 대화를 시작하세요</p>
+        <div className="text-center">
+          <p
+            className="text-3xl font-bold mb-3 tracking-tight"
+            style={{
+              background: 'linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
+            AR-AI
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            좌측에서 에이전트를 선택하여 대화를 시작하세요
+          </p>
         </div>
       </main>
     )
@@ -295,22 +445,102 @@ export function ChatPanel(): JSX.Element {
   return (
     <main className="flex-1 flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       {/* 상단 바 */}
-      <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
-        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-          {agentInfo?.icon} {agentInfo?.label}
-        </span>
-        <div className="flex items-center gap-1">
+      <div
+        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        style={{ borderBottom: '1px solid var(--border-color)' }}
+      >
+        <div className="flex items-center gap-1 min-w-0">
+          {/* 뒤로가기 */}
+          <button
+            onClick={goHome}
+            className="flex items-center gap-1.5 flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+            style={{ color: 'var(--text-muted)', background: 'transparent' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bg-hover)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'var(--text-muted)'
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>홈</span>
+          </button>
+
+          {/* 구분자 + 프로젝트명 */}
+          {activeProject && (
+            <>
+              <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>/</span>
+              <span
+                className="text-xs truncate px-1.5 max-w-[120px] font-medium"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {activeProject.name}
+              </span>
+              <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>/</span>
+            </>
+          )}
+
+          {/* 에이전트 탭 */}
+          <div className="flex items-center gap-0.5 overflow-x-auto">
+            {AGENT_TYPES.filter((a) => ['fe-developer', 'be-developer', 'qa-expert', 'po', 'issue-collector'].includes(a.id)).map((agent) => (
+              <button
+                key={agent.id}
+                onClick={() => selectAgent(agent.id, activeProjectId || undefined)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs flex-shrink-0 transition-all relative"
+                style={{
+                  color: activeAgentType === agent.id ? 'var(--accent)' : 'var(--text-muted)',
+                  background: activeAgentType === agent.id ? 'var(--accent-dim)' : 'transparent',
+                  fontWeight: activeAgentType === agent.id ? '600' : '400'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeAgentType !== agent.id) {
+                    e.currentTarget.style.background = 'var(--bg-hover)'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeAgentType !== agent.id) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-muted)'
+                  }
+                }}
+              >
+                <span>{agent.icon}</span>
+                <span>{agent.label}</span>
+                {isLoading && activeAgentType === agent.id && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: 'var(--accent)', animation: 'shimmer 1s ease-in-out infinite' }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           {/* 대화 초기화 버튼 */}
           <button
             onClick={() => { if (messages.length > 0 && confirm('이 에이전트의 대화를 초기화할까요?')) clearChat() }}
             disabled={isLoading || messages.length === 0}
-            className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'var(--bg-hover)' }}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-30"
+            style={{ color: 'var(--text-muted)', background: 'transparent' }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.background = 'var(--bg-hover)'
+                e.currentTarget.style.color = 'var(--text-secondary)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'var(--text-muted)'
+            }}
             title="대화 초기화"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
               <path d="M2 2V6H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M2.5 10A5.5 5.5 0 108 2.5C5.8 2.5 3.9 4 3 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
             </svg>
@@ -318,13 +548,26 @@ export function ChatPanel(): JSX.Element {
           {/* Todo 버튼 */}
           <button
             onClick={toggleTodo}
-            className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
-            style={{ color: todoOpen ? 'var(--accent)' : 'var(--text-muted)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+            style={{
+              color: todoOpen ? 'var(--accent)' : 'var(--text-muted)',
+              background: todoOpen ? 'var(--accent-dim)' : 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              if (!todoOpen) {
+                e.currentTarget.style.background = 'var(--bg-hover)'
+                e.currentTarget.style.color = 'var(--text-secondary)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!todoOpen) {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--text-muted)'
+              }
+            }}
             title="Todo"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
               <rect x="2" y="2" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.3"/>
               <rect x="2" y="10" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.3"/>
               <line x1="8.5" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -336,33 +579,55 @@ export function ChatPanel(): JSX.Element {
 
       {/* 워크스페이스 경고 배너 */}
       {workspaceStatus && workspaceStatus.missing.length > 0 && (
-        <div className="px-4 py-2 text-xs"
-          style={{ background: '#451a03', color: '#fcd34d', borderBottom: '1px solid #78350f' }}>
-          {workspaceStatus.missing[0]}
-          {workspaceStatus.missing.length > 1 && ` 외 ${workspaceStatus.missing.length - 1}건`}
-          {' — '}
-          <span style={{ textDecoration: 'underline', cursor: 'pointer' }}
-            onClick={() => useUIStore.getState().setViewMode('settings')}>
-            설정에서 확인
+        <div
+          className="px-5 py-2.5 text-xs flex items-center gap-2"
+          style={{ background: 'rgba(120,53,15,0.4)', color: '#fcd34d', borderBottom: '1px solid rgba(120,83,15,0.5)' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1L11 10H1L6 1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <line x1="6" y1="5" x2="6" y2="7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <circle cx="6" cy="9" r="0.5" fill="currentColor"/>
+          </svg>
+          <span>
+            {workspaceStatus.missing[0]}
+            {workspaceStatus.missing.length > 1 && ` 외 ${workspaceStatus.missing.length - 1}건`}
+            {' — '}
+            <span
+              style={{ textDecoration: 'underline', cursor: 'pointer', opacity: 0.8 }}
+              onClick={() => useUIStore.getState().setViewMode('settings')}
+            >
+              설정에서 확인
+            </span>
           </span>
         </div>
       )}
 
       {/* 인증 배너 */}
       {authStatus && authStatus.isAuthenticating && (
-        <div className="px-4 py-2 text-sm text-center"
-          style={{ background: '#4a3800', color: '#fbbf24', borderBottom: '1px solid #78650d' }}>
+        <div
+          className="px-5 py-2.5 text-xs text-center"
+          style={{ background: 'rgba(74,56,0,0.5)', color: '#fbbf24', borderBottom: '1px solid rgba(120,101,13,0.5)' }}
+        >
           브라우저에서 Claude 로그인을 진행해주세요...
         </div>
       )}
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+        <div className="max-w-2xl mx-auto px-5 py-8 space-y-7">
           {messages.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-lg mb-1" style={{ color: 'var(--text-secondary)' }}>
-                {agentInfo?.icon} {agentInfo?.label}
+            <div className="text-center py-24">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl"
+                style={{
+                  background: 'var(--accent-dim)',
+                  border: '1px solid rgba(167,139,250,0.2)'
+                }}
+              >
+                {agentInfo?.icon}
+              </div>
+              <p className="text-base font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                {agentInfo?.label}
               </p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 무엇을 도와드릴까요?
@@ -384,18 +649,35 @@ export function ChatPanel(): JSX.Element {
           })}
 
           {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
-            <div className="flex gap-3 items-start">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
-                style={{ background: 'var(--accent)', color: '#fff' }}>
+            <div className="flex gap-3.5 items-start">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
+                style={{
+                  background: 'var(--accent-dim)',
+                  border: '1px solid rgba(167,139,250,0.25)',
+                  color: 'var(--accent)'
+                }}
+              >
                 {agentInfo?.icon}
               </div>
-              <div className="flex gap-1 items-center pt-2">
-                <span className="w-1.5 h-1.5 rounded-full animate-bounce"
-                  style={{ background: 'var(--text-muted)', animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full animate-bounce"
-                  style={{ background: 'var(--text-muted)', animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full animate-bounce"
-                  style={{ background: 'var(--text-muted)', animationDelay: '300ms' }} />
+              <div className="flex flex-col gap-2 pt-1 flex-1 min-w-0">
+                {consensusStages.length > 0 ? (
+                  <ConsensusProgress stages={consensusStages} />
+                ) : (
+                  <div className="flex gap-1.5 items-center pt-1.5">
+                    <span className="loading-dot w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)', opacity: 0.6 }} />
+                    <span className="loading-dot w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)', opacity: 0.6 }} />
+                    <span className="loading-dot w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)', opacity: 0.6 }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {isLoading && messages[messages.length - 1]?.role === 'assistant' && consensusStages.length > 0 && (
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <ConsensusProgress stages={consensusStages} />
               </div>
             </div>
           )}
@@ -405,21 +687,35 @@ export function ChatPanel(): JSX.Element {
       </div>
 
       {/* 입력 영역 */}
-      <div className="px-4 pb-4 pt-2"
+      <div
+        className="px-5 pb-5 pt-3"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="max-w-3xl mx-auto">
-          <div className="relative rounded-2xl overflow-hidden transition-colors"
+        <div className="max-w-2xl mx-auto">
+          <div
+            className="relative overflow-hidden transition-all"
             style={{
-              background: 'var(--bg-input)',
-              border: isDragOver ? '2px dashed var(--accent)' : '1px solid var(--border-color)'
-            }}>
+              background: 'var(--bg-elevated)',
+              border: isDragOver
+                ? '2px dashed var(--accent)'
+                : inputFocused
+                  ? '1px solid rgba(167,139,250,0.35)'
+                  : '1px solid var(--border-color)',
+              borderRadius: '16px',
+              boxShadow: inputFocused
+                ? '0 0 0 3px rgba(167,139,250,0.08)'
+                : 'none',
+              transition: 'border-color 0.15s, box-shadow 0.15s'
+            }}
+          >
             {/* 드래그 오버레이 */}
             {isDragOver && (
-              <div className="absolute inset-0 flex items-center justify-center z-10"
-                style={{ background: 'rgba(var(--accent-rgb, 99,102,241), 0.1)' }}>
+              <div
+                className="absolute inset-0 flex items-center justify-center z-10"
+                style={{ background: 'rgba(167,139,250,0.06)' }}
+              >
                 <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
                   파일을 여기에 놓으세요
                 </span>
@@ -428,18 +724,23 @@ export function ChatPanel(): JSX.Element {
 
             {/* 첨부파일 미리보기 */}
             {pendingFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 px-3 pt-3">
+              <div className="flex flex-wrap gap-2 px-4 pt-4">
                 {pendingFiles.map((file, idx) => (
-                  <div key={idx} className="relative group rounded-lg overflow-hidden"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)' }}>
+                  <div
+                    key={idx}
+                    className="relative group rounded-xl overflow-hidden"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)' }}
+                  >
                     {file.previewUrl ? (
                       <img src={file.previewUrl} alt={file.name}
                         className="w-16 h-16 object-cover" />
                     ) : (
                       <div className="w-16 h-16 flex flex-col items-center justify-center px-1">
                         <span className="text-lg">{getFileIcon(file.mediaType)}</span>
-                        <span className="text-[9px] truncate w-full text-center mt-0.5"
-                          style={{ color: 'var(--text-muted)' }}>
+                        <span
+                          className="text-[9px] truncate w-full text-center mt-0.5"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
                           {file.name.length > 10 ? file.name.slice(0, 8) + '…' : file.name}
                         </span>
                       </div>
@@ -460,30 +761,45 @@ export function ChatPanel(): JSX.Element {
               onChange={handleInput}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
               placeholder={`${agentInfo?.label}에게 메시지 보내기...`}
               rows={1}
-              className="w-full px-4 py-3 pr-20 text-sm resize-none focus:outline-none"
+              className="w-full px-4 py-3.5 pr-20 text-sm resize-none focus:outline-none"
               style={{
                 background: 'transparent',
                 color: 'var(--text-primary)',
-                maxHeight: '200px'
+                maxHeight: '200px',
+                caretColor: 'var(--accent)'
               }}
             />
-            <input ref={fileInputRef} type="file" multiple accept={ACCEPTED_EXTENSIONS}
-              onChange={handleFileSelect} className="hidden" />
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ACCEPTED_EXTENSIONS}
+              onChange={handleFileSelect}
+              className="hidden"
+            />
 
-            <div className="absolute right-2 bottom-2 flex items-center gap-1">
+            <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1">
               {/* 파일 첨부 버튼 */}
               {!isLoading && (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-                  style={{ color: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                  style={{ color: 'var(--text-muted)', background: 'transparent' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--bg-hover)'
+                    e.currentTarget.style.color = 'var(--text-secondary)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--text-muted)'
+                  }}
                   title="파일 첨부 (이미지, PDF, 엑셀, CSV, 텍스트)"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                     <path d="M14 10V12.667A1.334 1.334 0 0112.667 14H3.333A1.334 1.334 0 012 12.667V10M11.333 5.333L8 2M8 2L4.667 5.333M8 2V10"
                       stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -493,28 +809,42 @@ export function ChatPanel(): JSX.Element {
               {isLoading ? (
                 <button
                   onClick={abortAgent}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-                  style={{ background: '#dc2626', color: '#fff' }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                  style={{ background: 'rgba(220,38,38,0.85)', color: '#fff' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#dc2626')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(220,38,38,0.85)')}
                 >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <rect x="2" y="2" width="10" height="10" rx="1.5" fill="currentColor"/>
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <rect x="2" y="2" width="10" height="10" rx="2" fill="currentColor"/>
                   </svg>
                 </button>
               ) : (
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() && pendingFiles.length === 0}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30"
-                  style={{ background: (input.trim() || pendingFiles.length > 0) ? 'var(--accent)' : 'transparent', color: '#fff' }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-25"
+                  style={{
+                    background: (input.trim() || pendingFiles.length > 0) ? 'var(--accent)' : 'var(--bg-hover)',
+                    color: '#fff',
+                    boxShadow: (input.trim() || pendingFiles.length > 0) ? '0 0 12px rgba(167,139,250,0.3)' : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (input.trim() || pendingFiles.length > 0) {
+                      e.currentTarget.style.background = 'var(--accent-hover)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = (input.trim() || pendingFiles.length > 0) ? 'var(--accent)' : 'var(--bg-hover)'
+                  }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                     <path d="M8 14V2M8 2L3 7M8 2L13 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               )}
             </div>
           </div>
-          <p className="text-center mt-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-center mt-2.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
             AR-AI는 실수할 수 있습니다. 중요한 정보는 직접 확인하세요.
           </p>
         </div>

@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #2f2f2f;
-  --bg-secondary: #212121;
-  --bg-sidebar: #171717;
-  --bg-hover: #3a3a3a;
-  --bg-active: #404040;
-  --bg-input: #3a3a3a;
-  --bg-user-msg: #404040;
+  --bg-primary: #212121;
+  --bg-secondary: #2a2a2a;
+  --bg-elevated: #2f2f2f;
+  --bg-sidebar: #1c1c1c;
+  --bg-hover: rgba(255,255,255,0.05);
+  --bg-active: rgba(255,255,255,0.08);
+  --bg-input: #282828;
+  --bg-user-msg: #2d2a38;
   --bg-assistant-msg: transparent;
-  --border-color: #3a3a3a;
-  --text-primary: #ececec;
-  --text-secondary: #a0a0a0;
-  --text-muted: #6b6b6b;
-  --accent: #b07ee8;
-  --accent-hover: #c49af0;
-  --danger: #ef4444;
+  --border-color: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.12);
+  --text-primary: #d8d8d8;
+  --text-secondary: #7a7a7a;
+  --text-muted: #515151;
+  --accent: #9d8be0;
+  --accent-hover: #b3a3e8;
+  --accent-dim: rgba(157,139,224,0.12);
+  --danger: #d97070;
+  --success: #5abf98;
 }
 
 * {
@@ -28,21 +32,22 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: rgba(255,255,255,0.18);
 }
 
 /* Sprint Markdown Viewer */
@@ -143,7 +148,7 @@ body {
 }
 
 .sprint-markdown code {
-  background: var(--bg-hover);
+  background: rgba(255,255,255,0.07);
   padding: 0.15em 0.4em;
   border-radius: 4px;
   font-size: 0.9em;
@@ -152,9 +157,9 @@ body {
 }
 
 .sprint-markdown pre {
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 1em;
   overflow-x: auto;
   margin: 0.8em 0;
@@ -167,11 +172,11 @@ body {
 }
 
 .sprint-markdown blockquote {
-  border-left: 3px solid var(--accent);
+  border-left: 2px solid var(--accent);
   padding: 0.3em 1em;
   margin: 0.6em 0;
-  color: var(--text-muted);
-  background: rgba(176, 126, 232, 0.05);
+  color: var(--text-secondary);
+  background: var(--accent-dim);
   border-radius: 0 6px 6px 0;
 }
 
@@ -187,6 +192,7 @@ body {
 }
 
 .sprint-markdown a:hover {
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 
@@ -204,7 +210,7 @@ body {
 }
 
 .sprint-markdown thead th {
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
   font-weight: 600;
   text-align: left;
@@ -244,7 +250,7 @@ body {
 .chat-markdown {
   color: var(--text-primary);
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .chat-markdown > *:first-child {
@@ -324,7 +330,7 @@ body {
 }
 
 .chat-markdown code {
-  background: var(--bg-hover);
+  background: rgba(255,255,255,0.07);
   padding: 0.15em 0.4em;
   border-radius: 4px;
   font-size: 0.9em;
@@ -333,9 +339,9 @@ body {
 }
 
 .chat-markdown pre {
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.8em;
   overflow-x: auto;
   margin: 0.5em 0;
@@ -348,11 +354,11 @@ body {
 }
 
 .chat-markdown blockquote {
-  border-left: 3px solid var(--accent);
+  border-left: 2px solid var(--accent);
   padding: 0.2em 0.8em;
   margin: 0.4em 0;
-  color: var(--text-muted);
-  background: rgba(176, 126, 232, 0.05);
+  color: var(--text-secondary);
+  background: var(--accent-dim);
   border-radius: 0 6px 6px 0;
 }
 
@@ -368,6 +374,7 @@ body {
 }
 
 .chat-markdown a:hover {
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 
@@ -379,7 +386,7 @@ body {
 }
 
 .chat-markdown thead th {
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   font-weight: 600;
   text-align: left;
   padding: 6px 10px;
@@ -394,4 +401,23 @@ body {
 
 .chat-markdown tbody tr:hover {
   background: var(--bg-hover);
+}
+
+/* 로딩 shimmer 애니메이션 */
+@keyframes shimmer {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.loading-dot {
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
 }

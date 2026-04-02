@@ -276,6 +276,8 @@ export async function collectMessages(options: CollectOptions): Promise<ChatMess
   const allMessages: ChatMessage[] = []
   let pageToken: string | undefined
 
+  console.log('[Google Chat] collectMessages - spaceName:', options.spaceName, 'start:', start.toISOString(), 'end:', end.toISOString())
+
   do {
     const response = await chat.spaces.messages.list({
       parent: options.spaceName,

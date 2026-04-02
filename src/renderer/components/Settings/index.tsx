@@ -58,7 +58,7 @@ export function Settings(): JSX.Element {
             </button>
           </div>
           <button
-            onClick={() => setViewMode('chat')}
+            onClick={() => useUIStore.getState().goHome()}
             className="text-sm px-3 py-1 rounded-lg transition-colors"
             style={{ color: 'var(--text-secondary)' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
@@ -165,6 +165,16 @@ export function Settings(): JSX.Element {
           </div>
         </section>
 
+        {/* Figma 연동 */}
+        <section>
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+            Figma 연동
+          </h3>
+          <div className="space-y-4">
+            <FigmaAuthButton />
+          </div>
+        </section>
+
         {/* MCP 서버 */}
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
@@ -206,6 +216,42 @@ export function Settings(): JSX.Element {
 
       </div>
     </main>
+  )
+}
+
+function FigmaAuthButton(): JSX.Element {
+  const [status, setStatus] = useState<{ authenticated: boolean; source?: string } | null>(null)
+
+  useEffect(() => {
+    window.electronAPI.figmaAuthStatus().then(setStatus)
+  }, [])
+
+  const handleRefresh = (): void => {
+    window.electronAPI.figmaAuthStatus().then(setStatus)
+  }
+
+  return (
+    <div className="rounded-xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {status?.authenticated
+              ? `Figma 연결됨 (Claude Code 인증 사용 중)`
+              : 'Figma 미연결'}
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+            {status?.authenticated
+              ? 'Claude Code의 Figma MCP 토큰을 자동으로 사용합니다.'
+              : '터미널에서 claude mcp add figma --transport http https://mcp.figma.com/mcp 실행 후 새로고침하세요.'}
+          </p>
+        </div>
+        <button onClick={handleRefresh}
+          className="px-3 py-1.5 rounded-lg text-xs transition-colors"
+          style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
+          새로고침
+        </button>
+      </div>
+    </div>
   )
 }
 

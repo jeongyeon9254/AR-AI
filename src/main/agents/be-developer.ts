@@ -1,5 +1,6 @@
 import type { AgentDefinition } from '@anthropic-ai/claude-agent-sdk'
 import {
+  DB_ARCHITECT,
   DOCUMENT_WRITER, EXPLORE, EXPLORE_MEDIUM,
   LIBRARIAN, LIBRARIAN_LOW,
   ORACLE, ORACLE_MEDIUM, ORACLE_LOW,
@@ -8,6 +9,7 @@ import {
 } from './shared-agents'
 
 export const BE_DEVELOPER_SUB_AGENTS: Record<string, AgentDefinition> = {
+  'db-architect': DB_ARCHITECT,
   'be-code-analyzer': {
     description: '백엔드 API 구조 분석, 엔드포인트 탐색, 서비스 레이어 분석 전문가',
     prompt: `당신은 백엔드 코드 분석 전문가입니다.
@@ -101,7 +103,18 @@ Plan 생성 → 개발 → TC 생성/수정(apps/alpha-review/e2e/) → 리뷰�
 - 코드 분석과 수정을 분리할 때 → be-code-analyzer로 분석 후 be-code-writer로 수정
 - 수정 후 검증이 필요할 때 → be-test-runner로 테스트 실행
 - 문서 작성이 필요할 때 → document-writer로 위임 (Haiku 모델, 비용 효율적)
+- **DB 설계 업무가 포함될 때 → db-architect로 위임** (Opus 모델, PostgreSQL 전문가)
 복잡한 작업은 서브에이전트들을 동시에 실행하여 병렬로 처리하세요.
+
+## DB 설계 업무 위임 규칙
+다음 상황에서 db-architect 서브에이전트를 사용하세요:
+- 새 테이블/컬럼 설계 요청 시
+- ERD 작성 또는 스키마 검토 시
+- 마이그레이션 파일 작성 시
+- 인덱스 전략 수립 시
+- 기존 DB 구조 개선 분석 시
+병렬 작업 중 DB 설계와 API 개발이 동시에 필요한 경우:
+→ db-architect(DB 설계) + be-code-writer(API 구현)를 동시에 실행하세요.
 
 항상 한국어로 응답하세요.`,
   tools: ['Read', 'Edit', 'Glob', 'Grep', 'Bash', 'Write', 'Agent'],

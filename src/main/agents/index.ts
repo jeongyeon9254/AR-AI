@@ -11,6 +11,9 @@ import { getSettings, syncSkillFilesAsync } from '../config'
 import { getContextBoard } from '../context-board'
 import { SessionManager } from '../sessions'
 import { collectIssues, formatMessagesForAnalysis } from '../tools/google-chat'
+import { getFigmaAccessToken } from '../tools/figma-auth'
+import { runCriticAndArbitrator } from './consensus-pipeline'
+import type { ConsensusStageEvent } from './consensus-pipeline'
 
 let _sessionManager: SessionManager | null = null
 export function setAgentSessionManager(sm: SessionManager): void {
@@ -20,16 +23,16 @@ function getSessionManager(): SessionManager | null {
   return _sessionManager
 }
 
-// 에이전트별 SDK 세션 ID 관리 (대화 연속성)
+// DB sessionId → SDK session_id (대화 연속성, 프로젝트별 격리)
 const sdkSessionMap = new Map<string, string>()
 
 // 셸 환경 캐시 — 첫 호출 시 비동기 초기화 후 재사용
 let _cachedShellPath: string | null = null
 let _cachedNodeBin: string | null = null
 
-/** 특정 에이전트의 SDK 세션을 리셋합니다 (새 대화 시작) */
-export function resetSdkSession(agentType: string): void {
-  sdkSessionMap.delete(agentType)
+/** 특정 세션의 SDK 세션을 리셋합니다 (새 대화 시작) */
+export function resetSdkSession(sessionId: string): void {
+  sdkSessionMap.delete(sessionId)
 }
 
 /** 모든 에이전트의 SDK 세션을 리셋합니다 */
@@ -94,6 +97,13 @@ async function createMainWorktreeAsync(repoPath: string, label: string): Promise
       } catch {
         rmSync(worktreePath, { recursive: true, force: true })
       }
+    }
+
+    // 디렉토리가 없어도 git에 등록된 stale worktree가 있을 수 있으므로 prune
+    try {
+      await execAsync('git worktree prune', { cwd: repoPath })
+    } catch {
+      // prune 실패는 무시
     }
 
     // worktree 디렉토리 확보
@@ -298,8 +308,8 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   const nodeBin = _cachedNodeBin
   console.log('[AR-AI] CLI path:', cliPath, 'exists:', existsSync(cliPath))
 
-  // SDK 세션 resume으로 대화 연속성 유지
-  const existingSdkSession = sdkSessionMap.get(agentType)
+  // SDK 세션 resume으로 대화 연속성 유지 (sessionId 기준으로 격리)
+  const existingSdkSession = sdkSessionMap.get(options.sessionId)
 
   // 에이전트별 토큰/턴 최적화
   const ANALYSIS_AGENTS = ['policy-expert', 'issue-collector', 'po', 'qa-expert']
@@ -387,6 +397,14 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
       if (server.type === 'http') {
         // HTTP 기반 MCP 서버
         const headers: Record<string, string> = { ...(server.headers || {}) }
+        // figma-design 서버에 토큰 자동 주입 (Claude Code Keychain 우선, PAT 폴백)
+        if (name === 'figma-design') {
+          const oauthToken = await getFigmaAccessToken()
+          const token = oauthToken || settings.figmaAccessToken
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+          }
+        }
         mcpServersConfig[name] = {
           type: 'http',
           url: server.url,
@@ -554,7 +572,26 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     })()
   }
 
+  // ── Consensus Stage 1 시작 ──────────────────────────────────────────────
+  const stage1ModelLabel = (!isOrchestrator && agentDef) ? (agentDef.model || 'sonnet') : null
+  if (stage1ModelLabel && !mainWindow.isDestroyed()) {
+    const stageEvent: ConsensusStageEvent = {
+      sessionId, stage: 1, status: 'running', stageName: 'Proposer', model: `claude-${stage1ModelLabel}-4-6`
+    }
+    mainWindow.webContents.send('chat:consensus-stage', stageEvent)
+    // Stage 1 헤더를 첫 번째 스트림 청크로 전송
+    mainWindow.webContents.send('chat:stream-chunk', {
+      sessionId,
+      content: `**Stage 1 · Proposer** *(${stage1ModelLabel})*\n\n`,
+      done: false
+    })
+  }
+
   let fullContent = ''
+  // Stage 1 헤더 포함한 누적 콘텐츠 (Stage 2/3 구성 시 사용)
+  const stage1Header = stage1ModelLabel
+    ? `**Stage 1 · Proposer** *(${stage1ModelLabel})*\n\n`
+    : ''
 
   try {
     for await (const sdkMessage of query({ prompt, options: queryOptions })) {
@@ -577,7 +614,7 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
 
       // 첫 메시지에서 SDK 세션 ID 캡처 → 다음 대화에서 resume 용
       if ('session_id' in sdkMessage && (sdkMessage as any).session_id) {
-        sdkSessionMap.set(agentType, (sdkMessage as any).session_id)
+        sdkSessionMap.set(options.sessionId, (sdkMessage as any).session_id)
       }
 
       if (sdkMessage.type === 'auth_status') {
@@ -651,9 +688,9 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     )
   }
 
-  const finalContent = fullContent || '응답이 없습니다.'
+  const stage1Content = fullContent || '응답이 없습니다.'
 
-  // 공유 컨텍스트 보드에 요약 기록 (에러가 아닌 경우만)
+  // 공유 컨텍스트 보드에 요약 기록 (에러가 아닌 경우만, Stage 1 기준)
   if (fullContent && !fullContent.startsWith('오류가 발생했습니다')) {
     const summary = extractSummary(message, fullContent)
     contextBoard.add(agentType, summary)
@@ -664,15 +701,39 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     }
   }
 
+  // ── Consensus: Stage 1 완료 → Stage 2/3 실행 ─────────────────────────
+  if (stage1ModelLabel && !mainWindow.isDestroyed()) {
+    const stageEvent: ConsensusStageEvent = {
+      sessionId, stage: 1, status: 'done', stageName: 'Proposer', model: `claude-${stage1ModelLabel}-4-6`
+    }
+    mainWindow.webContents.send('chat:consensus-stage', stageEvent)
+  }
+
+  // 일반 에이전트(non-orchestrator)에만 consensus 파이프라인 적용
+  // abort 시 Stage 2/3 건너뜀 — done:true 미전송으로 중복 메시지 방지
+  if (stage1ModelLabel && !fullContent.startsWith('오류가 발생했습니다') && !abortSignal?.aborted) {
+    const stage1AccumulatedContent = stage1Header + stage1Content
+    const combinedContent = await runCriticAndArbitrator({
+      sessionId,
+      originalMessage: message,
+      stage1Output: stage1Content,
+      stage1AccumulatedContent,
+      mainWindow,
+      abortSignal
+    })
+    return combinedContent
+  }
+
+  // orchestrator 또는 에러 시 기존 방식으로 done 전송
   if (!mainWindow.isDestroyed()) {
     mainWindow.webContents.send('chat:stream-chunk', {
       sessionId,
-      content: finalContent,
+      content: stage1Content,
       done: true
     })
   }
 
-  return finalContent
+  return stage1Content
 }
 
 /** 에이전트 응답에서 [TODO:*] 명령을 파싱하여 실행 */
@@ -744,11 +805,14 @@ async function preprocessIssueCollectorMessage(
     /이슈\s*수집/,
     /이슈\s*분석/,
     /이슈\s*리포트/,
+    /이슈\s*리포팅/,
     /이슈\s*확인/,
     /이슈\s*모[아으]/,
     /이슈\s*정리/,
     /이슈\s*파악/,
     /이슈\s*요약/,
+    /이슈\s*가져/,
+    /이슈\s*보여/,
     /채팅?\s*분석/,
     /대화\s*내용/,
     /대화\s*분석/,
@@ -764,12 +828,17 @@ async function preprocessIssueCollectorMessage(
     /채널.*이슈/
   ]
 
-  const isTrackingRequest = trackingPatterns.some((p) => p.test(message))
+  const matchedPattern = trackingPatterns.find((p) => p.test(message))
+  const isTrackingRequest = !!matchedPattern
+  console.log('[IssueCollector] message:', message.substring(0, 100))
+  console.log('[IssueCollector] isTrackingRequest:', isTrackingRequest, matchedPattern?.toString())
   if (!isTrackingRequest) return message
 
   const settings = getSettings()
+  console.log('[IssueCollector] settings - spaceName:', settings.googleChatDefaultSpace, 'credentialsPath:', settings.googleChatCredentialsPath)
   // 메시지에서 스페이스 URL/ID 추출, 없으면 기본 설정 사용
   const spaceName = extractSpaceName(message, settings.googleChatDefaultSpace)
+  console.log('[IssueCollector] resolved spaceName:', spaceName)
   if (!spaceName) {
     return message + '\n\n[시스템] Google Chat 기본 스페이스가 설정되지 않았습니다. 설정에서 기본 스페이스를 등록해주세요.'
   }
@@ -810,6 +879,7 @@ ${analysisContext}
 
 위 데이터를 분석하여 이슈 리포트를 생성해주세요.`
   } catch (error) {
+    console.error('[IssueCollector] collectIssues error:', error)
     const errMsg = error instanceof Error ? error.message : String(error)
     const is404 = errMsg.includes('404') || errMsg.includes('Not Found')
     const hint = is404
@@ -829,7 +899,16 @@ function extractSpaceName(message: string, defaultSpace: string): string {
   const spaceMatch = message.match(/spaces\/([A-Za-z0-9_-]+)/)
   if (spaceMatch) return `spaces/${spaceMatch[1]}`
 
-  return defaultSpace
+  // defaultSpace 정규화: 제어문자 제거 + chat/XXX, space/XXX, 순수 ID → spaces/XXX
+  if (!defaultSpace) return defaultSpace
+  // eslint-disable-next-line no-control-regex
+  const cleaned = defaultSpace.replace(/[\x00-\x1F\x7F]/g, '').trim()
+  if (!cleaned) return cleaned
+  if (cleaned.startsWith('spaces/')) return cleaned
+  const chatMatch = cleaned.match(/^(?:chat\/|space\/)?([A-Za-z0-9_-]+)$/)
+  if (chatMatch) return `spaces/${chatMatch[1]}`
+
+  return cleaned
 }
 
 /** Date를 로컬 타임존 기준 YYYY-MM-DD로 변환 (toISOString은 UTC라 KST에서 하루 밀림) */

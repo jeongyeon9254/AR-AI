@@ -9,11 +9,17 @@ import {
   startOAuthFlow, getAuthStatus, clearAuth,
   type CollectOptions
 } from './tools/google-chat'
+import {
+  startOAuthFlow as startFigmaOAuthFlow,
+  getAuthStatus as getFigmaAuthStatus,
+  clearAuth as clearFigmaAuth
+} from './tools/figma-auth'
 
 let sessionManager: SessionManager
 const activeAbortControllers = new Map<string, AbortController>()
 let sprintWatcher: FSWatcher | null = null
 let sprintWatchPath: string | null = null
+let handlersRegistered = false
 
 function startSprintWatcher(mainWindow: BrowserWindow): void {
   const { sprintPath: sprint } = getSettings()
@@ -42,15 +48,44 @@ function startSprintWatcher(mainWindow: BrowserWindow): void {
 }
 
 export function registerIpcHandlers(mainWindow: BrowserWindow): void {
+  // Sprint 폴더 감시는 매번 업데이트 (mainWindow 참조 갱신)
+  startSprintWatcher(mainWindow)
+
+  // IPC 핸들러는 최초 1회만 등록
+  if (handlersRegistered) return
+  handlersRegistered = true
+
   sessionManager = new SessionManager()
   setAgentSessionManager(sessionManager)
 
-  // Sprint 폴더 감시 시작
-  startSprintWatcher(mainWindow)
-
   // Session management
-  ipcMain.handle('session:create', (_event, agentType: string) => {
-    return sessionManager.create(agentType)
+  // Project management
+  ipcMain.handle('project:create', (_event, name: string) => {
+    const project = sessionManager.createProject(name)
+    // 프로젝트 생성 시 6개 에이전트 세션 자동 생성
+    const agentTypes = ['fe-developer', 'be-developer', 'issue-collector', 'policy-expert', 'qa-expert', 'po']
+    const sessions = agentTypes.map((agentType) => sessionManager.create(agentType, project.id))
+    return { project, sessions }
+  })
+
+  ipcMain.handle('project:list', () => {
+    return sessionManager.listProjects()
+  })
+
+  ipcMain.handle('project:delete', (_event, id: string) => {
+    return sessionManager.deleteProject(id)
+  })
+
+  ipcMain.handle('project:sessions', (_event, projectId: string) => {
+    return sessionManager.listByProject(projectId)
+  })
+
+  ipcMain.handle('project:todos', (_event, projectId: string) => {
+    return sessionManager.listTodosByProject(projectId)
+  })
+
+  ipcMain.handle('session:create', (_event, agentType: string, projectId?: string) => {
+    return sessionManager.create(agentType, projectId)
   })
 
   ipcMain.handle('session:list', () => {
@@ -100,22 +135,38 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
           sessionManager.addMessage(sessionId, 'assistant', assistantContent)
           // 세션당 최대 500개 메시지 유지 (자동 정리)
           sessionManager.pruneMessages(sessionId, 500)
+          // 로딩 상태 동기화 보장 — runAgent 내부에서 done:true를 못 보낸 경우 커버
+          if (!mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('chat:agent-done', { sessionId })
+          }
         })
         .catch((error) => {
           activeAbortControllers.delete(sessionId)
           const errorMsg = `오류가 발생했습니다: ${error.message || error}`
           sessionManager.addMessage(sessionId, 'assistant', errorMsg)
-          mainWindow.webContents.send('chat:stream-chunk', {
-            sessionId,
-            content: errorMsg,
-            done: true
-          })
+          if (!mainWindow.isDestroyed()) {
+            try {
+              mainWindow.webContents.send('chat:stream-chunk', {
+                sessionId,
+                content: errorMsg,
+                done: true
+              })
+            } catch {
+              // webContents 전송 실패 시에도 agent-done 이벤트로 로딩 상태 해제
+            }
+            mainWindow.webContents.send('chat:agent-done', { sessionId })
+          }
         })
 
       return { success: true }
     } catch (error) {
       return { success: false, error: String(error) }
     }
+  })
+
+  // 세션 실행 상태 확인 (로딩 상태 동기화용)
+  ipcMain.handle('chat:is-running', (_event, sessionId: string) => {
+    return activeAbortControllers.has(sessionId)
   })
 
   // 실행 중지
@@ -153,8 +204,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('storage:clear-messages', (_event, sessionId: string) => {
     // SDK 세션도 리셋하여 이전 대화 컨텍스트 제거
-    const session = sessionManager.getSession(sessionId)
-    if (session) resetSdkSession(session.agentType)
+    resetSdkSession(sessionId)
     const deleted = sessionManager.clearMessages(sessionId)
     sessionManager.vacuum()
     return { deleted }
@@ -167,8 +217,8 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   })
 
   // Todo management
-  ipcMain.handle('todo:create', (_event, agentType: string, content: string) => {
-    return sessionManager.createTodo(agentType, content)
+  ipcMain.handle('todo:create', (_event, agentType: string, content: string, projectId?: string) => {
+    return sessionManager.createTodo(agentType, content, projectId)
   })
 
   ipcMain.handle('todo:list', (_event, agentType: string) => {
@@ -179,8 +229,8 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return sessionManager.listAllTodos()
   })
 
-  ipcMain.handle('todo:update', (_event, id: string, updates: { content?: string; done?: boolean }) => {
-    return sessionManager.updateTodo(id, updates)
+  ipcMain.handle('todo:update', (_event, id: string, updates: { content?: string; done?: boolean; kanbanStatus?: string }) => {
+    return sessionManager.updateTodo(id, updates as any)
   })
 
   ipcMain.handle('todo:delete', (_event, id: string) => {
@@ -264,5 +314,18 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   ipcMain.handle('google:logout', () => {
     clearAuth()
     return { success: true }
+  })
+
+  // Figma 인증 (Claude Code Keychain 읽기)
+  ipcMain.handle('figma:auth-status', async () => {
+    return getFigmaAuthStatus()
+  })
+
+  ipcMain.handle('figma:login', async () => {
+    return startFigmaOAuthFlow()
+  })
+
+  ipcMain.handle('figma:logout', () => {
+    return clearFigmaAuth()
   })
 }

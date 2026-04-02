@@ -3,9 +3,17 @@ import { app } from 'electron'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
 
+export interface Project {
+  id: string
+  name: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Session {
   id: string
   agentType: string
+  projectId: string
   title: string
   createdAt: string
   updatedAt: string
@@ -19,11 +27,15 @@ export interface Message {
   createdAt: string
 }
 
+export type KanbanStatus = '대기' | '진행' | '검토' | '완료'
+
 export interface Todo {
   id: string
   agentType: string
+  projectId: string
   content: string
   done: boolean
+  kanbanStatus: KanbanStatus
   createdAt: string
   updatedAt: string
 }
@@ -38,7 +50,15 @@ export class SessionManager {
   }
 
   private init(): void {
+    // 기본 테이블 생성 (기존 테이블은 변경 안 함)
     this.db.exec(`
+      CREATE TABLE IF NOT EXISTS projects (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS sessions (
         id TEXT PRIMARY KEY,
         agentType TEXT NOT NULL,
@@ -68,24 +88,78 @@ export class SessionManager {
       CREATE INDEX IF NOT EXISTS idx_messages_session_created
         ON messages(sessionId, createdAt);
     `)
+
+    // 마이그레이션: 컬럼 추가
+    try {
+      this.db.exec(`ALTER TABLE sessions ADD COLUMN projectId TEXT NOT NULL DEFAULT ''`)
+    } catch { /* 이미 존재 */ }
+    try {
+      this.db.exec(`ALTER TABLE todos ADD COLUMN projectId TEXT NOT NULL DEFAULT ''`)
+    } catch { /* 이미 존재 */ }
+    try {
+      this.db.exec(`ALTER TABLE todos ADD COLUMN kanbanStatus TEXT NOT NULL DEFAULT '대기'`)
+    } catch { /* 이미 존재 */ }
+
+    // 마이그레이션 후 인덱스 생성
+    try {
+      this.db.exec(`CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(projectId)`)
+    } catch { /* 무시 */ }
+    try {
+      this.db.exec(`CREATE INDEX IF NOT EXISTS idx_todos_project ON todos(projectId)`)
+    } catch { /* 무시 */ }
   }
 
-  create(agentType: string): Session {
+  // === Project CRUD ===
+  createProject(name: string): Project {
+    const project: Project = {
+      id: randomUUID(),
+      name,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    this.db.prepare(
+      'INSERT INTO projects (id, name, createdAt, updatedAt) VALUES (?, ?, ?, ?)'
+    ).run(project.id, project.name, project.createdAt, project.updatedAt)
+    return project
+  }
+
+  listProjects(): Project[] {
+    return this.db.prepare('SELECT * FROM projects ORDER BY createdAt ASC').all() as Project[]
+  }
+
+  deleteProject(id: string): boolean {
+    // 세션/투두는 projectId로 연관되므로 함께 정리
+    const sessions = this.db.prepare('SELECT id FROM sessions WHERE projectId = ?').all(id) as { id: string }[]
+    for (const s of sessions) {
+      this.db.prepare('DELETE FROM messages WHERE sessionId = ?').run(s.id)
+    }
+    this.db.prepare('DELETE FROM sessions WHERE projectId = ?').run(id)
+    this.db.prepare('DELETE FROM todos WHERE projectId = ?').run(id)
+    const result = this.db.prepare('DELETE FROM projects WHERE id = ?').run(id)
+    return result.changes > 0
+  }
+
+  create(agentType: string, projectId = ''): Session {
     const session: Session = {
       id: randomUUID(),
       agentType,
+      projectId,
       title: `${agentType} - 새 대화`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
     this.db.prepare(
-      'INSERT INTO sessions (id, agentType, title, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)'
-    ).run(session.id, session.agentType, session.title, session.createdAt, session.updatedAt)
+      'INSERT INTO sessions (id, agentType, projectId, title, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(session.id, session.agentType, session.projectId, session.title, session.createdAt, session.updatedAt)
     return session
   }
 
   list(): Session[] {
     return this.db.prepare('SELECT * FROM sessions ORDER BY updatedAt DESC').all() as Session[]
+  }
+
+  listByProject(projectId: string): Session[] {
+    return this.db.prepare('SELECT * FROM sessions WHERE projectId = ? ORDER BY agentType ASC').all(projectId) as Session[]
   }
 
   get(id: string): { session: Session; messages: Message[] } | null {
@@ -108,18 +182,20 @@ export class SessionManager {
   }
 
   // === Todo CRUD ===
-  createTodo(agentType: string, content: string): Todo {
+  createTodo(agentType: string, content: string, projectId = ''): Todo {
     const todo: Todo = {
       id: randomUUID(),
       agentType,
+      projectId,
       content,
       done: false,
+      kanbanStatus: '대기',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
     this.db.prepare(
-      'INSERT INTO todos (id, agentType, content, done, createdAt, updatedAt) VALUES (?, ?, ?, 0, ?, ?)'
-    ).run(todo.id, todo.agentType, todo.content, todo.createdAt, todo.updatedAt)
+      'INSERT INTO todos (id, agentType, projectId, content, done, kanbanStatus, createdAt, updatedAt) VALUES (?, ?, ?, ?, 0, ?, ?, ?)'
+    ).run(todo.id, todo.agentType, todo.projectId, todo.content, todo.kanbanStatus, todo.createdAt, todo.updatedAt)
     return todo
   }
 
@@ -129,22 +205,29 @@ export class SessionManager {
     ).all(agentType).map((row: any) => ({ ...row, done: !!row.done })) as Todo[]
   }
 
+  listTodosByProject(projectId: string): Todo[] {
+    return this.db.prepare(
+      'SELECT * FROM todos WHERE projectId = ? ORDER BY createdAt ASC'
+    ).all(projectId).map((row: any) => ({ ...row, done: !!row.done })) as Todo[]
+  }
+
   listAllTodos(): Todo[] {
     return this.db.prepare(
       'SELECT * FROM todos ORDER BY createdAt ASC'
     ).all().map((row: any) => ({ ...row, done: !!row.done })) as Todo[]
   }
 
-  updateTodo(id: string, updates: { content?: string; done?: boolean }): Todo | null {
+  updateTodo(id: string, updates: { content?: string; done?: boolean; kanbanStatus?: KanbanStatus }): Todo | null {
     const existing = this.db.prepare('SELECT * FROM todos WHERE id = ?').get(id) as any
     if (!existing) return null
     const content = updates.content ?? existing.content
     const done = updates.done ?? !!existing.done
+    const kanbanStatus = updates.kanbanStatus ?? existing.kanbanStatus ?? '대기'
     const updatedAt = new Date().toISOString()
     this.db.prepare(
-      'UPDATE todos SET content = ?, done = ?, updatedAt = ? WHERE id = ?'
-    ).run(content, done ? 1 : 0, updatedAt, id)
-    return { ...existing, content, done, updatedAt }
+      'UPDATE todos SET content = ?, done = ?, kanbanStatus = ?, updatedAt = ? WHERE id = ?'
+    ).run(content, done ? 1 : 0, kanbanStatus, updatedAt, id)
+    return { ...existing, content, done, kanbanStatus, updatedAt }
   }
 
   deleteTodo(id: string): boolean {
