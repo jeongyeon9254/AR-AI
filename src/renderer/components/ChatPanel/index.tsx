@@ -484,9 +484,12 @@ export function ChatPanel(): JSX.Element {
             </>
           )}
 
-          {/* 에이전트 탭 */}
+          {/* 에이전트 탭 — 프로젝트 모드: 5개 에이전트, 글로벌 이슈매니저 모드: issue-collector만 */}
           <div className="flex items-center gap-0.5 overflow-x-auto">
-            {AGENT_TYPES.filter((a) => ['fe-developer', 'be-developer', 'qa-expert', 'po', 'issue-collector'].includes(a.id)).map((agent) => (
+            {AGENT_TYPES.filter((a) => activeProjectId
+              ? ['fe-developer', 'be-developer', 'qa-expert', 'po', 'issue-collector'].includes(a.id)
+              : a.id === 'issue-collector'
+            ).map((agent) => (
               <button
                 key={agent.id}
                 onClick={() => selectAgent(agent.id, activeProjectId || undefined)}

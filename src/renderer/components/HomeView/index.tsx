@@ -6,7 +6,7 @@ import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
 export function HomeView(): JSX.Element {
   const { projects, loadProjects, createProject, deleteProject, loadProjectTodos, projectTodos, updateTodoKanban, deleteTodo } = useProjectStore()
   const { setViewMode } = useUIStore()
-  const { initProject, selectAgent, loadingAgents, agentSessions } = useSessionStore()
+  const { initProject, selectAgent, loadingAgents, agentSessions, openGlobalIssueManager } = useSessionStore()
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
   const [creating, setCreating] = useState(false)
@@ -71,6 +71,25 @@ export function HomeView(): JSX.Element {
           Alpha Review Agent
         </h1>
         <div className="flex items-center gap-2">
+          <button
+            onClick={async () => { await openGlobalIssueManager(); setViewMode('chat') }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+            style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)', background: 'transparent' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bg-elevated)'
+              e.currentTarget.style.borderColor = 'var(--border-strong)'
+              e.currentTarget.style.color = 'var(--text-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'var(--border-color)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+            }}
+            title="Google Chat 이슈 트래킹 - 프로젝트와 무관하게 전체 이슈 관리"
+          >
+            <span style={{ fontSize: '13px' }}>📋</span>
+            <span>이슈 매니저</span>
+          </button>
           <button
             onClick={() => setViewMode('settings')}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all"

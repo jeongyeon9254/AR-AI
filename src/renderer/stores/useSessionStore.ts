@@ -48,6 +48,7 @@ interface SessionState {
   init: () => Promise<void>
   initProject: (projectId: string) => Promise<void>
   selectAgent: (agentType: string, projectId?: string) => Promise<void>
+  openGlobalIssueManager: () => Promise<void>
   sendMessage: (content: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => void
   clearChat: () => Promise<void>
   abortAgent: () => Promise<void>
@@ -103,6 +104,39 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         // 무시
       }
     }
+  },
+
+  // 프로젝트와 무관한 글로벌 이슈매니저 세션 열기 (Google Chat 이슈 트래킹 전용)
+  openGlobalIssueManager: async () => {
+    // 1. 기존 글로벌 issue-collector 세션 찾기
+    const sessions = await window.electronAPI.listSessions()
+    let session = sessions.find((s: Session) =>
+      s.agentType === 'issue-collector' && (!s.projectId || s.projectId === '')
+    )
+
+    // 2. 없으면 새로 생성
+    if (!session) {
+      session = await window.electronAPI.createSession('issue-collector')
+    }
+    if (!session) return
+
+    const sessionId = session.id
+    set((state) => ({
+      agentSessions: { ...state.agentSessions, ['issue-collector']: sessionId },
+      sessions: state.sessions.some((s) => s.id === sessionId)
+        ? state.sessions
+        : [...state.sessions, session as Session],
+      activeAgentType: 'issue-collector',
+      activeProjectId: null,
+      activeSessionId: sessionId,
+      messages: [],
+      streamingMessageId: null
+    }))
+
+    // 3. 메시지 로드
+    const result = await window.electronAPI.getSession(sessionId)
+    if (get().activeSessionId !== sessionId) return
+    set({ messages: result?.messages || [] })
   },
 
   sendMessage: (content: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => {
