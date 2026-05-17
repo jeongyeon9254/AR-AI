@@ -312,7 +312,7 @@ export async function runAgent(options: AgentRunOptions): Promise<string> {
   const existingSdkSession = sdkSessionMap.get(options.sessionId)
 
   // 에이전트별 토큰/턴 최적화
-  const ANALYSIS_AGENTS = ['policy-expert', 'issue-collector', 'po', 'qa-expert']
+  const ANALYSIS_AGENTS = ['policy-expert', 'policy-manager', 'issue-collector', 'po', 'qa-expert']
   const isAnalysisAgent = ANALYSIS_AGENTS.includes(agentType)
   const maxTurns = isAnalysisAgent ? 15 : 30
   const maxTokens = isAnalysisAgent ? 4096 : 8192

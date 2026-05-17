@@ -1,0 +1,2151 @@
+[
+  {
+    "topic_id": "UVZxwSkDMic",
+    "title": "@정연재 오큐라 OCURA ( 48743 ) / sunbiocell - 3 | 라이브 영문 위젯 내에서 작성자 한국어로 표기",
+    "participants": [
+      "김성연",
+      "정연재",
+      "정태성",
+      "Deleted User"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 22,
+    "substantive_count": 17,
+    "date_start": "2026년 1월 15일 목요일 오전 6시 50분 3초 UTC",
+    "date_end": "2026년 1월 16일 금요일 오전 12시 34분 25초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "김성연",
+        "time": "2026년 1월 15일 목요일 오전 6시 50분 3초 UTC",
+        "text": "@정연재 오큐라 OCURA ( 48743 ) / sunbiocell - 3 | 라이브\n영문 위젯 내에서 작성자 한국어로 표기"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 1월 15일 목요일 오전 6시 51분 12초 UTC",
+        "text": "영문 위젯 디자인 관련 문의\n게시판 위젯 > 비회원 표시 관련 : \"비회원\"으로 노출되는 것은 의도된 설정인 걸까요?",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 1월 15일 목요일 오전 6시 51분 38초 UTC",
+        "text": "관련 링크",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 57분 43초 UTC",
+        "text": "해당 부분은 BE에서 user_info를 보내주는데, 해당 경우 비회원인 경우 한글로 비회원을 내려주고 있습니다."
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 1월 15일 목요일 오전 6시 58분 7초 UTC",
+        "text": "오호이"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 58분 10초 UTC",
+        "text": "위젯 영어 지원은 FE단계에서만 컨텐츠를 영어로 번역해주고 BE에서 내려받는 모든값은 그대로 보여주는것이 현재기준이라 그렇습니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 58분 17초 UTC",
+        "text": "이건 제가 생각하지못했던부분이라서"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 58분 44초 UTC",
+        "text": "만약 지원을 해주려면 user_info 가 \"비회원\"이고 locale가 EN이라면 해당 한글을 -> 영어로 변환해줘야할듯합니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 58분 59초 UTC",
+        "text": "저 컴포넌트는 공용컴포넌트라서 수정사항은 1개파일로 예상합니다."
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 1월 15일 목요일 오전 6시 59분 5초 UTC",
+        "text": "위젯 스크립트 단에서 변경이 있어야겠군요"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 59분 5초 UTC",
+        "text": "일단 리뷰내에서 확인이 필요합니다"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 6시 59분 10초 UTC",
+        "text": "네 맞습니다 태성님"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 1월 15일 목요일 오전 7시 1분 47초 UTC",
+        "text": "혹시 바로 수정 가능한 부분인걸까요? 현재 업체가 답장을 기다리고 있어서 확인 부탁드립니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 7시 2분 0초 UTC",
+        "text": "급하지 않은 부분이라면 논의 후 대응을 해드리려하는데 괜찮으실까요?"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 1월 15일 목요일 오전 7시 2분 31초 UTC",
+        "text": "그러면 미노출하실 수 있도록 안내 나가겠습니다!"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 1월 15일 목요일 오전 7시 6분 29초 UTC",
+        "text": "업체한테 미노출 방법 안내 드렸고 급하지 않은 부분이라서 추후 개선 시 전달 한 번 부탁드리겠습니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 7시 7분 54초 UTC",
+        "text": "네 감사합니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 7시 8분 3초 UTC",
+        "text": "내일중으로 논의후 바로 공유드리겠습니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 8시 58분 29초 UTC",
+        "text": "cc. @이경서"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 15일 목요일 오전 8시 58분 39초 UTC",
+        "text": "태그한줄알았는데 태그를 못드려서 드렸습니다.."
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 1월 15일 목요일 오전 9시 0분 57초 UTC",
+        "text": "괜찮습니다!! 알아서 잘 훔쳐보고있었습니닼ㅋㅋ 낼 스크럼때 ㄱㄱ"
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 1월 16일 금요일 오전 12시 34분 25초 UTC",
+        "text": "영문 위젯 사용 업체가 아직 많지 않아서 당장 대응은 안하기로 결정되었습니다. (백로그만 생성) \n\n추후 쿨다운 기간때 개선 시, 공유드리도록 하겠습니다! @김성연"
+      }
+    ]
+  },
+  {
+    "topic_id": "5cIUrYgkiEY",
+    "title": "[GA 스크립트 삭제 件] 솔루션랩-ALL ga스크립트가 리뷰 스크립트로 쇼핑몰에 설치된게 아직 많이 남아있다고 합니다 일괄 삭제 ... 등은 어떻게 요청드리면 좋을까요 ?",
+    "participants": [
+      "이욱창",
+      "정연재",
+      "최재윤",
+      "최민수",
+      "Deleted User",
+      "우남규"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 20,
+    "substantive_count": 18,
+    "date_start": "2026년 1월 16일 금요일 오전 6시 17분 19초 UTC",
+    "date_end": "2026년 1월 20일 화요일 오전 1시 32분 29초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "이욱창",
+        "time": "2026년 1월 16일 금요일 오전 6시 17분 19초 UTC",
+        "text": "[GA 스크립트 삭제 件]\n솔루션랩-ALL \nga스크립트가 리뷰 스크립트로 쇼핑몰에 설치된게 아직 많이 남아있다고 합니다\n일괄 삭제 ... 등은 어떻게 요청드리면 좋을까요 ?",
+        "annotations": [
+          "[interaction_data,group_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 16일 금요일 오전 6시 21분 28초 UTC",
+        "text": "저희 예전 스크립트 이관때 애매해서 삭제하지않았던 GA관련 스크립트들입니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 16일 금요일 오전 6시 22분 15초 UTC",
+        "text": "alphareview_GA.js"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 16일 금요일 오전 6시 22분 42초 UTC",
+        "text": "월요일 스크럼시 논의가 필요합니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 16일 금요일 오전 6시 22분 49초 UTC",
+        "text": "cc. @이경서 @권효은"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 16일 금요일 오전 6시 22분 59초 UTC",
+        "text": "cc. @정태성 @최민수"
+      },
+      {
+        "author": "최재윤",
+        "time": "2026년 1월 16일 금요일 오전 6시 48분 5초 UTC",
+        "text": "애매한 지점이 어디였을까요?"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 1월 16일 금요일 오전 7시 15분 26초 UTC",
+        "text": "[리뷰 통합 당시]\n\n1. GA를 쓰고 있는지 확인필요\n2. 통합하는데 바쁨, 쓰고있는지 확인할 시간도 없음\n3. 쓰고있을 수도 있으니 빼기 애매함\n4. 일단 놔두는걸로 잠정 결정\n\n위와 같은 흐름이었습니다!"
+      },
+      {
+        "author": "최재윤",
+        "time": "2026년 1월 16일 금요일 오전 8시 47분 10초 UTC",
+        "text": "리뷰에서 설치했던 GA는 사용하지 않는 상태로 확인되었습니다."
+      },
+      {
+        "author": "최재윤",
+        "time": "2026년 1월 16일 금요일 오전 8시 47분 41초 UTC",
+        "text": "따라서, 삭제 일정 조율 부탁드립니다😌"
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 1월 20일 화요일 오전 12시 58분 27초 UTC",
+        "text": "@우남규 안녕하세요, 남규님! GA 관련 스크립트를 전체 제거하기로 최종 결정이 되었는데 T/P팀에서 요 삭제 작업 진행해주실 수 있을까요? 🙏🙏\n\n현재 신규 업체들은 설치하지 않고 과거에 설치된 업체들에만 남아있는 걸로 알고 있습니다."
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 1월 20일 화요일 오전 1시 4분 16초 UTC",
+        "text": "기존에 구 스크립트 삭제하는 코드가 있는걸로 알고있는데 맞나요? @최민수"
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 1월 20일 화요일 오전 1시 4분 40초 UTC",
+        "text": "작업은 해드릴 수는 있습니다."
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 1월 20일 화요일 오전 1시 19분 2초 UTC",
+        "text": "기존에 있는 스크립트는 다음 기능이 다 합쳐진 커맨드라, 적절하지 않은 것 같습니다.\n기존 스크립트 백업\n구 스크립트 삭제\n신규 스크립트 설치",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 1월 20일 화요일 오전 1시 20분 37초 UTC",
+        "text": "네 코드 추가해서 따로 돌려보고 처리되면 말씀드리겠습니다"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 1월 20일 화요일 오전 1시 20분 48초 UTC",
+        "text": "넵, 감사합니다"
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 1월 20일 화요일 오전 1시 21분 54초 UTC",
+        "text": "@최재윤 재윤님 혹시 삭제관련한 일정이 급한건가요?"
+      },
+      {
+        "author": "최재윤",
+        "time": "2026년 1월 20일 화요일 오전 1시 22분 35초 UTC",
+        "text": "아뇨 급한건 아닙니다!\n해당 작업 일정이 지정되고 누락되지만 않으면 됩니다 🙂"
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 1월 20일 화요일 오전 1시 23분 7초 UTC",
+        "text": "넵 알겠습니다"
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 1월 20일 화요일 오전 1시 32분 29초 UTC",
+        "text": "감사합니다 남규님!!"
+      }
+    ]
+  },
+  {
+    "topic_id": "D0BtABH3MQU",
+    "title": "알파리뷰 온보딩 페이지 관리자 옆에 이모지 안 나오는 것 같습니다!",
+    "participants": [
+      "신지수",
+      "정연재",
+      "송용협"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 4,
+    "substantive_count": 4,
+    "date_start": "2026년 1월 26일 월요일 오전 6시 8분 12초 UTC",
+    "date_end": "2026년 1월 26일 월요일 오전 6시 44분 45초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "신지수",
+        "time": "2026년 1월 26일 월요일 오전 6시 8분 12초 UTC",
+        "text": "알파리뷰 온보딩 페이지 관리자 옆에 이모지 안 나오는 것 같습니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 26일 월요일 오전 6시 42분 11초 UTC",
+        "text": "해당 아이콘이 폰트라서 🧑‍🔧 그럴듯합니다.\n추후 아이콘이미지로 아예 변경해야겠네요",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "송용협",
+        "time": "2026년 1월 26일 월요일 오전 6시 43분 20초 UTC",
+        "text": "안녕하세요.\n\n혹시 어느 기기로 접속하셨는지 알 수 있을까요?"
+      },
+      {
+        "author": "신지수",
+        "time": "2026년 1월 26일 월요일 오전 6시 44분 45초 UTC",
+        "text": "사내 데스크탑으로 접속하였습니다! 윈도우 입니다"
+      }
+    ]
+  },
+  {
+    "topic_id": "8x-wyJufynE",
+    "title": "@정태성 @박수인 @최민수 @정연재 @송용협 @박현희 @이기탁 @이경서 AI VOC PRD 작성 관련하여 기획–개발 협업 방식 논의 미팅 요청 @최규백 님과 제가 현재 AI VOC PRD를 작성 중인데, 저희가 정",
+    "participants": [
+      "최란",
+      "Deleted User",
+      "박현희",
+      "suin.park@saladlab.co",
+      "이태용",
+      "최민수",
+      "정태성",
+      "정연재",
+      "송용협",
+      "최규백",
+      "김종우"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 20,
+    "substantive_count": 9,
+    "date_start": "2026년 1월 28일 수요일 오전 2시 44분 16초 UTC",
+    "date_end": "2026년 1월 28일 수요일 오전 7시 8분 24초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "최란",
+        "time": "2026년 1월 28일 수요일 오전 2시 44분 16초 UTC",
+        "text": "@정태성 @박수인 @최민수 @정연재 @송용협 @박현희 @이기탁 @이경서 \nAI VOC PRD 작성 관련하여 기획–개발 협업 방식 논의 미팅 요청\n@최규백 님과 제가 현재 AI VOC PRD를 작성 중인데, 저희가 정리한 PRD 작성 방식을 공유하고 이를 바탕으로\n기획–개발이 어떤 방식으로 협업하면 좋을지 의견을 나누는 자리를 가지고 싶습니다. Pre-PRD 작성 과정에서 의견을 주셨던 분들께서도 가능하시다면 함께 참여해 다양한 인사이트를 나눠주시면 감사하겠습니다.\nAI VOC 직접 유관자가 아니더라도, PRD 작성 방식이나 협업 프로세스가 궁금하신 분들의 참여도 환영합니다.\n\n📍 미팅 일정\n일시: 금일 오후 4시\n장소: 8층 회의실\n소요 시간: 약 1시간\n\n👥 대상\nPre-PRD 작성을 계획 중이거나 기획에 참여하고 싶은 분\nPRD 작성 방식 및 협업 프로세스가 궁금하신 분\n\n참여 가능하신 분들은 댓글로 남겨주세요.",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 1월 28일 수요일 오전 2시 44분 58초 UTC",
+        "text": "참여요!"
+      },
+      {
+        "author": "박현희",
+        "time": "2026년 1월 28일 수요일 오전 2시 45분 15초 UTC",
+        "text": "참여하겠습니다."
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 1월 28일 수요일 오전 2시 46분 11초 UTC",
+        "text": "참여합니다!"
+      },
+      {
+        "author": "이태용",
+        "time": "2026년 1월 28일 수요일 오전 2시 47분 59초 UTC",
+        "text": "저도 갈래요"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 1월 28일 수요일 오전 2시 48분 18초 UTC",
+        "text": "참여하겠습니다."
+      },
+      {
+        "author": "이태용",
+        "time": "2026년 1월 28일 수요일 오전 2시 48분 42초 UTC",
+        "text": "혹시 댓글에 참여라는 텍스트를 포함해야만 참여 가능한건가요?"
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 1월 28일 수요일 오전 2시 49분 16초 UTC",
+        "text": "저도 참여하겠습니다~"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 1월 28일 수요일 오전 2시 50분 3초 UTC",
+        "text": "저도 갈래요도 참여로 간주합니다"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 1월 28일 수요일 오전 2시 53분 1초 UTC",
+        "text": "참여"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 1월 28일 수요일 오전 3시 0분 42초 UTC",
+        "text": "참여하겠습니다~!"
+      },
+      {
+        "author": "송용협",
+        "time": "2026년 1월 28일 수요일 오전 3시 0분 56초 UTC",
+        "text": "저도 참여입니당"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 1월 28일 수요일 오전 3시 1분 13초 UTC",
+        "text": "@이태용 님 참여라고 말씀 안하시면 큰일납니다"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 1월 28일 수요일 오전 3시 1분 33초 UTC",
+        "text": "오 올참!"
+      },
+      {
+        "author": "김종우",
+        "time": "2026년 1월 28일 수요일 오전 3시 17분 24초 UTC",
+        "text": "오.. 지나가다 우연히 봤는데요. \"PRD 작성 방식을 공유하고 이를 바탕으로 기획–개발이 어떤 방식으로 협업하면 좋을지\" 에 대해서는 각 스쿼드별로 달리 스타일을 가져가지는 않습니다. 제가 일전에 PRD 작성방식과 리뷰방식에 대해 가이드 드렸던 것을 참고하시면 될 것 같은데요. \n@최란  저랑 먼저 이야기 해보시면 어떨까요?"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 1월 28일 수요일 오전 3시 25분 51초 UTC",
+        "text": "밥먹고 1:20경 가볍게 초대하겠습니다!"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 1월 28일 수요일 오전 7시 1분 45초 UTC",
+        "text": "@정태성"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 1월 28일 수요일 오전 7시 2분 38초 UTC",
+        "text": "진행중입니다만 천천히들어오세요!"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 1월 28일 수요일 오전 7시 4분 20초 UTC",
+        "text": "@박수인"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 1월 28일 수요일 오전 7시 8분 24초 UTC",
+        "text": "https://www.notion.so/saladlab/AI-VOC-2f446f3e549c80a3bb5cf9f6ec72ad36?source=copy_link",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      }
+    ]
+  },
+  {
+    "topic_id": "0i4Gcd0Kwk4",
+    "title": "@이욱창 @정연재 리뷰 작성페이지 플로우 질문!",
+    "participants": [
+      "suin.park@saladlab.co",
+      "정연재",
+      "정태성"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 18,
+    "substantive_count": 16,
+    "date_start": "2026년 2월 13일 금요일 오전 4시 54분 23초 UTC",
+    "date_end": "2026년 2월 13일 금요일 오전 6시 16분 45초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 54분 23초 UTC",
+        "text": "@이욱창 @정연재 리뷰 작성페이지 플로우 질문!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 54분 46초 UTC",
+        "text": "제가 어제 밤에 리뷰 작성 알림톡을 받아서 사진이랑 동영상 첨부해서 리뷰 작성 완료했습니다"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 55분 20초 UTC",
+        "text": "근데 제가 오늘 다시 그 알림톡 다시 들어갔다가 나갔거든요?"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 55분 39초 UTC",
+        "text": "위에 홈버튼 누르면 이렇게 뜨길래 나가기 눌러서 -> 제가 쓴 리뷰 내역좀 확인해보려고 했어요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 55분 57초 UTC",
+        "text": "근데 이렇게 하고 대시보드 들어가니까 기존에 작성했던 리뷰의 이미지랑 동영상이 다 날라가 있는거예요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 56분 53초 UTC",
+        "text": "이미 작성 완료한 리뷰에 대해서\n다시 리뷰 작성 페이지를 들어가면\n키워드리뷰는 유지되는거같은데"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 56분 59초 UTC",
+        "text": "이미지랑 동영상은 다 날라가있고"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 57분 17초 UTC",
+        "text": "리뷰 저장 버튼을 누르지 않아도, 리뷰가 그대로 저장되는듯합니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 13일 금요일 오전 4시 58분 10초 UTC",
+        "text": "리뷰작성시 비디오와 이미지를 등록한후 나가기 버튼을 눌러 리뷰가 생성되었는데, 이전에 등록한 미디어가 보이지않는다는 말씀이시죠?"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 4시 58분 15초 UTC",
+        "text": "작성기록 들어가서 내역 보면 미디어 첨부된 거 날라간채로 새로 업데이트 된걸로 확인되어욥"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 13일 금요일 오전 4시 58분 53초 UTC",
+        "text": "해당 페이지에서 리뷰작성시 비디오와 사진을 제대로 불러오고있는지 확인 후 공유드려보겠습니다."
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 5시 0분 9초 UTC",
+        "text": "감사합니닷"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 5시 2분 34초 UTC",
+        "text": "연재님 제 컴터로 알림톡 통해서 리뷰작성페이지 들어가서 같이 네트워크 창 보는게 나을까욥?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 13일 금요일 오전 5시 3분 9초 UTC",
+        "text": "네네 이후에 로컬에서 같은환경 재현해서 해당 페이지의 상태관리가 어떻게되는지도 보겠습니다."
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 5시 10분 53초 UTC",
+        "text": "무서운 리뷰 작성 페이지 ..."
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 2월 13일 금요일 오전 6시 13분 32초 UTC",
+        "text": "무리작"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 2월 13일 금요일 오전 6시 13분 46초 UTC",
+        "text": "와 만약 쇼피파이 진출하면 이 리뷰 작성 페이지를 전세계 사람들이 사용한다는 거잖아"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 13일 금요일 오전 6시 16분 45초 UTC",
+        "text": "리뷰작성페이지 갈아엎어야한다를 저는 24년도부터 듣긴했는데 쇼피파이 가기 전에 하겠죠 머 ..."
+      }
+    ]
+  },
+  {
+    "topic_id": "sRBheqD9zck",
+    "title": "상세페이지 동영상 리뷰 뮤트",
+    "participants": [
+      "우남규",
+      "최란",
+      "정연재",
+      "한혜주"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 10,
+    "substantive_count": 10,
+    "date_start": "2026년 2월 23일 월요일 오전 2시 54분 7초 UTC",
+    "date_end": "2026년 2월 23일 월요일 오전 4시 26분 2초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "우남규",
+        "time": "2026년 2월 23일 월요일 오전 2시 54분 7초 UTC",
+        "text": "상세페이지 동영상 리뷰 뮤트"
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 2월 23일 월요일 오전 2시 56분 11초 UTC",
+        "text": "@최란 @정태성 @정연재 동영상 리뷰가 대시보드에서는 소리가 나는데 저희 위젯에서는 소리가 안난다는 문의가 와서 확인 결과 mute값이 설정되어있는데 저희 정책상 mute값이 기본인가요? cc @한혜주"
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 2월 23일 월요일 오전 2시 56분 45초 UTC",
+        "text": "@세이프스튜디오 shieldkorea001 (16309)\n————————————\n확인한 리뷰 번호 : XOtgMA8lNE"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 2월 23일 월요일 오전 3시 3분 39초 UTC",
+        "text": "위젯 리뉴얼 시 동영상 소리 설정에 대해 별도로 수정한 사안은 없으므로, mute가 기본 정책으로 보입니다. (저희가 자동재생이다보니 여러 소리가 겹쳐들릴수도 있어서 그렇게 설정되었을거라 생각이 들어요..)"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 2월 23일 월요일 오전 3시 3분 44초 UTC",
+        "text": "그렇지만 '리뷰 상세페이지' 진입 시 소리가 들리는 부분이 더 자연스러운 ux라고 보입니다만 혹시 어느업체가 그런 문의를 주셨을까요?"
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 2월 23일 월요일 오전 3시 3분 55초 UTC",
+        "text": "세이프스튜디오 shieldkorea001 (16309) 입니다"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 23일 월요일 오전 3시 23분 25초 UTC",
+        "text": "일단 구버전 기준코드는 전부 뮤트가 디폴트였던것으로 확인해서 구버전 코드기준으로 작업하기는 했었습니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 23일 월요일 오전 3시 23분 32초 UTC",
+        "text": "위젯 리뉴얼당시입니다."
+      },
+      {
+        "author": "우남규",
+        "time": "2026년 2월 23일 월요일 오전 4시 22분 14초 UTC",
+        "text": "구버전당시에도 그랬으면 따로 뮤트를 뺄 필요없을거같긴한데 소리출력이 비용발생에 영향이 가는부분이면 신중할 필요가 있어보입니다."
+      },
+      {
+        "author": "한혜주",
+        "time": "2026년 2월 23일 월요일 오전 4시 26분 2초 UTC",
+        "text": "아하..? 그랬었군요 그럼 이부분은 VOC로 작성해두겠습니다 확인 감사합니당"
+      }
+    ]
+  },
+  {
+    "topic_id": "jwfauWBbZw8",
+    "title": "알파리뷰 리뷰 모델의 탈퇴한 유저 리뷰를 나타내는 필드",
+    "participants": [
+      "최민수",
+      "suin.park@saladlab.co",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 15,
+    "substantive_count": 12,
+    "date_start": "2026년 2월 27일 금요일 오전 5시 25분 58초 UTC",
+    "date_end": "2026년 2월 27일 금요일 오전 5시 36분 31초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 25분 58초 UTC",
+        "text": "알파리뷰 리뷰 모델의 탈퇴한 유저 리뷰를 나타내는 필드",
+        "annotations": [
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 26분 29초 UTC",
+        "text": "해당 기능은 특정 업체를 위한 전용 기능\n탈퇴 고객이 작성한 리뷰를 필터링하기 위한 bool 필드\n\n\n회원 탈퇴 웹훅을 받아, 해당 쇼핑몰이 아윤채몰인 경우에 한정해서\n해당 고객이 작성한 리뷰들의 is_user_deleted 필드를 True로 변경하고 있었음\n\n\n통합 이후 동작하지 않음",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 26분 37초 UTC",
+        "text": "@박수인"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 27일 금요일 오전 5시 26분 55초 UTC",
+        "text": "아하ㅏ"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 27일 금요일 오전 5시 27분 0초 UTC",
+        "text": "확인했습니다"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 27일 금요일 오전 5시 27분 6초 UTC",
+        "text": "민수님 그러면 혹시 탈퇴한 유저에 대한 리워드지급 불가나 안내도 통합이후로는"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 27일 금요일 오전 5시 27분 9초 UTC",
+        "text": "동작하지않는게 맞을까요?"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 27분 42초 UTC",
+        "text": "지급 불가? 안내? 혹시 어느 프로세스 일까요?"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 27일 금요일 오전 5시 27분 45초 UTC",
+        "text": "실시간 리뷰 이관 해줄때 탈퇴한 유저의 리뷰는 이관해주지 않겠단 조건도 있었는데, 이것도 아윤채몰만을 위한거였군요"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 28분 18초 UTC",
+        "text": "is_user_deleted 필드로 필터링 하고 있었다면 맞아요"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 28분 48초 UTC",
+        "text": "연재님 말씀하신 프로세스에 대해 백그라운드가 아예없어서"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 2월 27일 금요일 오전 5시 28분 57초 UTC",
+        "text": "자세하게 설명 가능하실까요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 27일 금요일 오전 5시 32분 52초 UTC",
+        "text": "이거 관련해서 아래처럼 지급취소 사유 적혀있었어요\n연재님께서 149번 샵에서 @saladlab.com으로 끝나는 아이디(지금 탈퇴한 고객)로 작성한 리뷰가요!\n\n\n지급취소:알 수 없는 사유로 해당 고객에게 혜택을 지급할 수 없습니다. 아임웹에서 직접 지급해주세요.|"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 2월 27일 금요일 오전 5시 33분 9초 UTC",
+        "text": "리뷰 id=34125",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 2월 27일 금요일 오전 5시 36분 31초 UTC",
+        "text": " 수 없는 사유로 해당 고객에게 혜택을 지급할 수 없습니다. 아임웹에서 직접 지급해주세요\n-> 이게 탈퇴한 케이스가 이렇게나왔던거군요"
+      }
+    ]
+  },
+  {
+    "topic_id": "bW0GQ8m71SY",
+    "title": "리뷰 스쿼드 workspace 노션페이지 사용은 할만 하신가요? 살펴보니, 2차 태그 분류 - Sprint 2가 거의 끝나가는 상황으로 이해했습니다. cc @박현희 @정연재 @정태성",
+    "participants": [
+      "김종우",
+      "정태성",
+      "박현희",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 4,
+    "substantive_count": 4,
+    "date_start": "2026년 3월 9일 월요일 오전 1시 43분 1초 UTC",
+    "date_end": "2026년 3월 9일 월요일 오전 2시 15분 12초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "김종우",
+        "time": "2026년 3월 9일 월요일 오전 1시 43분 1초 UTC",
+        "text": "리뷰 스쿼드 workspace 노션페이지 사용은 할만 하신가요? \n살펴보니, 2차 태그 분류 - Sprint 2가 거의 끝나가는 상황으로 이해했습니다. cc @박현희 @정연재 @정태성"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 9일 월요일 오전 1시 45분 50초 UTC",
+        "text": "사용할만한가에 대한 대답을 드리려면 좀 써밨어야 했는데 아직 다음작업들을 넣진 못했습니다."
+      },
+      {
+        "author": "박현희",
+        "time": "2026년 3월 9일 월요일 오전 1시 53분 11초 UTC",
+        "text": "Sprint 2는 이제 시작이고 Sprint 1이 마무리가 되었습니다! Sprint 2는 일정을 임의로 넣어뒀던거라 수정과 추가가 필요합니다. 지금까지는 팀원들과 다같이 사용하지 않아서 주신 질문에 자세한 답변은 못드리지만 개인적으로 시각화가 되어있다는 점과 편의성은 아주 좋았습니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 9일 월요일 오전 2시 15분 12초 UTC",
+        "text": "저도 기존 쿨다운 기간에 했던 작업정도만 넣다보니 아직 장단점에 대한 내용을 공유드리기 애매해서 다음 스프린트 진행이 완료되면 다시 공유드려보겠습니다."
+      }
+    ]
+  },
+  {
+    "topic_id": "39sv4XzWCxU",
+    "title": "@최규백 부정태그 급증 판단법 질문",
+    "participants": [
+      "suin.park@saladlab.co",
+      "최규백",
+      "정태성",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 18,
+    "substantive_count": 16,
+    "date_start": "2026년 3월 16일 월요일 오전 5시 38분 29초 UTC",
+    "date_end": "2026년 3월 17일 화요일 오전 2시 32분 25초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 16일 월요일 오전 5시 38분 29초 UTC",
+        "text": "@최규백 부정태그 급증 판단법 질문"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 16일 월요일 오전 5시 39분 5초 UTC",
+        "text": "여기 나와야하는 태그 부정 비율을 계산해야하는데"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 16일 월요일 오전 5시 41분 33초 UTC",
+        "text": "1. 특정 태그 수\n지난 24시간 내 작성된 리뷰 중에서\n긍부정 구분없이 \"배송늦음\"에 대한 2차 태그 수 (하나의 리뷰에 해당 2차 태그가 2개이면 -> 2개)\n2. 특정 부정 태그 \n지난 24시간 내 작성된 리뷰 중에서\n\"배송늦음\"에 대한 부정 2차 태그 수 (하나의 리뷰에 해당 2차 태그가 2개이면 -> 2개)",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 16일 월요일 오전 5시 42분 7초 UTC",
+        "text": "이렇게 카운팅해서 아래처럼 비율을 구하는게 맞나요 ??\n \n태그 부정 비율  = (특정 부정 태그 수 / 특정 태그 수)*100"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 16일 월요일 오전 5시 43분 57초 UTC",
+        "text": "네 정확합니다."
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 16일 월요일 오전 5시 45분 10초 UTC",
+        "text": "그래서 대형 업체가 아니면 2차 태그 수가 충분히 쌓이지 않아서 최소 개수를 채우지 못해 해당 태그 알림 로직이 적용이 안될 가능성이 높습니다!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 16일 월요일 오전 5시 49분 35초 UTC",
+        "text": "아하 확인했습니다!"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 16일 월요일 오전 8시 36분 23초 UTC",
+        "text": "@최규백 님 이거 태그수가 맞나요? 아니면 해당 태그가 붙은 리뷰수가 맞나요?"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 16일 월요일 오전 8시 36분 48초 UTC",
+        "text": "저는 태그수로 이해했어욥 .."
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 16일 월요일 오전 8시 48분 52초 UTC",
+        "text": "태그수가 아니라 리뷰수인것으로!"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 16일 월요일 오전 8시 49분 4초 UTC",
+        "text": "태그수 →  리뷰수로 정정하겠습니다! 🙇‍♂️"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 12시 10분 48초 UTC",
+        "text": "@최규백 규백님 어제 prd 문서에 용어정리 수정된거 같은데, 수정한 거 공유 부탁드려도 될까요\n\n전체 태그 -> 특정 태그로 용어를 바꾸신걸까요?",
+        "annotations": [
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 12시 12분 10초 UTC",
+        "text": "https://www.notion.so/saladlab/AI-30346f3e549c8047a37beb31257c3f0c?source=copy_link#31046f3e549c80528b26ff9182bea6b6\n\n이 영역은 따로 수정 안된거 같아서 여기도 싱크 맞춰주시면 감사하겠습니다"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 17일 화요일 오전 1시 16분 28초 UTC",
+        "text": "@정연재 님도 보면 참 좋을 내용인듯?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 17일 화요일 오전 1시 16분 54초 UTC",
+        "text": "같이 확인하겠습니다 감사합니다!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 2시 9분 31초 UTC",
+        "text": "@최규백 요청드린 거 확인 부탁드려요"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 17일 화요일 오전 2시 31분 47초 UTC",
+        "text": "어제 변경한 내용은 1가지 태그 당 1개의 리뷰를 적용한다는 점과 예시를 문서화 했습니다.\nhttps://www.notion.so/saladlab/AI-30346f3e549c8047a37beb31257c3f0c?source=copy_link#31146f3e549c8037b742d2a400d8dd39"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 17일 화요일 오전 2시 32분 25초 UTC",
+        "text": "\n해당 부분은 Legacy로 따로 빼놓은 부분인데 보시기에 헷갈리는 것 같아 삭제처리해놓겠습니다!"
+      }
+    ]
+  },
+  {
+    "topic_id": "V2fRxz5Hsio",
+    "title": "AI-모니터링 API 관련",
+    "participants": [
+      "정연재",
+      "suin.park@saladlab.co"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 4,
+    "substantive_count": 3,
+    "date_start": "2026년 3월 17일 화요일 오전 2시 0분 37초 UTC",
+    "date_end": "2026년 3월 17일 화요일 오전 2시 12분 32초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "정연재",
+        "time": "2026년 3월 17일 화요일 오전 2시 0분 37초 UTC",
+        "text": "AI-모니터링 API 관련"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 17일 화요일 오전 2시 1분 18초 UTC",
+        "text": "@박수인 님 혹시 해당 기능 관련하여 별도로 논의하면 스레드나 채널이 있을까요?"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 2시 6분 43초 UTC",
+        "text": "안그래도 말씀드리려고 했는데 .! 어제 수정사항이 좀 있어서 관련해서 수정하고 테스트 중입니닷 \n\n모니터링 알림 기능에 대해서 잘 모르실 거 같아서 오후에 한번 설명드리고 api 공유 드려도 될까요 ?! 한 2시쯤 어떠십니까요"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 17일 화요일 오전 2시 12분 32초 UTC",
+        "text": "네 좋습니다!"
+      }
+    ]
+  },
+  {
+    "topic_id": "Ydtk9qNbNzY",
+    "title": " @정태성@최규백 @정연재 모니터링 알림 작업현황 공유",
+    "participants": [
+      "suin.park@saladlab.co",
+      "정태성",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 6,
+    "substantive_count": 6,
+    "date_start": "2026년 3월 17일 화요일 오전 7시 20분 6초 UTC",
+    "date_end": "2026년 3월 17일 화요일 오전 8시 41분 37초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 7시 20분 6초 UTC",
+        "text": " @정태성@최규백 @정연재 \n모니터링 알림 작업현황 공유",
+        "annotations": [
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 7시 21분 52초 UTC",
+        "text": "1. 모니터링 알림 설정\n모델 설계 완료\napi 구현 완료\n2. 모니터링 알림 목록/상세보기\n모델 설계 완료\napi 구현 완료\n3. 위험리뷰\n모델에 플래그값 추가 \n오케스트레이터가 호출할 api 구현 미완료\n4. 모니터링 알림 발송\n모델 설계 완료\n채널별 템플릿 생성 완료\n알림 생성 크론  진행 중 \n템플릿에 맞춰 수신채널별 메시지 발송  진행 중\n\n대시보드에서 사용할 API 구현은 모두 완료되었고\n위험리뷰 api, 크론 작업 남았습니다",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 8시 4분 23초 UTC",
+        "text": "@정태성 님과 논의 후 남은 작업 우선순위 ⬇️ \n1. 위험리뷰 api 작업 (알림생성 및 알림 메시지 발송)\n2. 부정리뷰/부정태그 급증 크론"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 17일 화요일 오전 8시 27분 57초 UTC",
+        "text": "to@최규백.\n수인님께 위험리뷰 감지 작업을 먼저 부탁드렸습니다. 시연때 이거를 보여주는게 좋을듯 해서!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 17일 화요일 오전 8시 41분 6초 UTC",
+        "text": "@정연재 위험리뷰에 대한 알림의 상세 내용 -> @최규백 께서 새로 정책을 정해주셨습니다! 요거 내일 아침 스크럼 끝나고 구두로 간략하게 설명드릴게욥 규백님께서 프론트에 궁금하신 부분도 있대서요 !\n\n@정태성 위험리뷰의 리뷰 본문 전체 x -> 위험리뷰로 판단되는 구문 리스트 o 로 보여주기로 했습니다! is_risk_detected나 is_keyword_violation가 True인 ReviewPhrase 데이터 사용"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 17일 화요일 오전 8시 41분 37초 UTC",
+        "text": "확인했습니다 내일 오전 스크럼 종료후에 확인하겠습니다!"
+      }
+    ]
+  },
+  {
+    "topic_id": "pcF_kkTq9PU",
+    "title": "@정연재 모니터링알림 민감도",
+    "participants": [
+      "suin.park@saladlab.co",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 6,
+    "substantive_count": 5,
+    "date_start": "2026년 3월 20일 금요일 오전 6시 36분 53초 UTC",
+    "date_end": "2026년 3월 20일 금요일 오전 7시 43분 35초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 20일 금요일 오전 6시 36분 53초 UTC",
+        "text": "@정연재 모니터링알림 민감도"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 20일 금요일 오전 6시 37분 15초 UTC",
+        "text": "\"sensitivity\":30 <- 둔감 일때 이렇게 저장되던데"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 20일 금요일 오전 6시 37분 19초 UTC",
+        "text": "\nclass MonitoringAlert__SensitivityType(models.IntegerChoices):\n    LOW = 10  # 둔감\n    MEDIUM = 20  # 보통\n    HIGH = 30  # 예민",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 20일 금요일 오전 6시 37분 25초 UTC",
+        "text": "이렇게가 맞습니다! 반대루 되어야해요"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 20일 금요일 오전 6시 37분 40초 UTC",
+        "text": "오잉 확인후 수정하겠습니다"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 20일 금요일 오전 7시 43분 35초 UTC",
+        "text": "확인했습니다."
+      }
+    ]
+  },
+  {
+    "topic_id": "xQK3pSeTu8k",
+    "title": "@정태성 @최규백 테스트로 부정리뷰/부정태그 급증 알림 발송 프로세스 돌렸습니다",
+    "participants": [
+      "suin.park@saladlab.co",
+      "정태성",
+      "정연재",
+      "최규백"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 10,
+    "substantive_count": 10,
+    "date_start": "2026년 3월 24일 화요일 오전 4시 57분 40초 UTC",
+    "date_end": "2026년 3월 24일 화요일 오전 6시 14분 19초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 24일 화요일 오전 4시 57분 40초 UTC",
+        "text": "@정태성 @최규백 테스트로 부정리뷰/부정태그 급증 알림 발송 프로세스 돌렸습니다"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 24일 화요일 오전 4시 59분 16초 UTC",
+        "text": "@정연재 알림 상세보기에서 그래프의 점이 아래가 짤려있어요 👀 원래 안그랬던거 같은데 의도된걸까요 ??"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 24일 화요일 오전 5시 0분 34초 UTC",
+        "text": "부정급증 알림톡 왔습니다"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 24일 화요일 오전 5시 0분 47초 UTC",
+        "text": "@최규백 알림 상세보기에서 지난 14일 평균 부정 리뷰 비율 -> 노란선인데, 이게 정확히 몇 퍼센트인지는 그래프 위에 호버되면 정보가 뜨면 좋을거같아요",
+        "annotations": [
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 24일 화요일 오전 5시 2분 45초 UTC",
+        "text": "점이 잘리는건 오후에 한번 확인해보겟습니다."
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 24일 화요일 오전 5시 6분 18초 UTC",
+        "text": "좋습니다. 제가 4시 쯤 화면 추가해놓겠습니다!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 24일 화요일 오전 5시 10분 43초 UTC",
+        "text": "@정연재 님 참고하실 사항이여서 태그 드리비다"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 3월 24일 화요일 오전 6시 12분 24초 UTC",
+        "text": "@정연재 \n마우스 호버 시 해당화면처럼 정보가 뜨도록 부탁드립니다.\n\nhttps://www.figma.com/design/A71udqJ6j8zC5ixbXXukL5/AI-%EB%A6%AC%EB%B7%B0-%EB%B6%84%EC%84%9D?node-id=8562-3339&t=kvK61o0j3VeFle2Y-11"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 24일 화요일 오전 6시 13분 51초 UTC",
+        "text": "악 연재님 지금 결제 플로우 개발 해야해서"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 24일 화요일 오전 6시 14분 19초 UTC",
+        "text": "[ ] AI VoC 결제\n[ ] 자동설치 QA"
+      }
+    ]
+  },
+  {
+    "topic_id": "xqdqvzUTEoo",
+    "title": "프리뷰 위젯 자동설치 안내문구관련",
+    "participants": [
+      "정연재",
+      "박슬기나",
+      "김성연",
+      "Deleted User"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 17,
+    "substantive_count": 13,
+    "date_start": "2026년 3월 26일 목요일 오전 5시 30분 23초 UTC",
+    "date_end": "2026년 3월 26일 목요일 오전 6시 26분 6초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 5시 30분 23초 UTC",
+        "text": "프리뷰 위젯 자동설치 안내문구관련"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 5시 34분 6초 UTC",
+        "text": "안녕하세요\n@김성연 님, @김민이 님\n\n저희 자동설치 프리뷰 단계에서 설치를 진행하는 경우디자인 스킨 변경에 대한 안내문구 모달을 뛰워줄 예정입니다.\n\n1. 프리뷰 화면 설치시 설치완료되는 동안 디자인 스킨 바꾸면안됨 + 수정도 지양\n2. 바꿀거면 리뷰 라이브 이후 바꿔야함\n\n이라는 문구를 안내하려고 합니다.\n\ntitle\n\"지금 스킨에 위젯을 설치해요\"\ndescription\n\"지금 디자인 스킨에 위젯을 설치해요.\n설치중 디자인 스킨을 변경하면 위젯이 정상적으로 보이지 않을수 있습니다.\"\n\n정도로 생각되는데 추가 안내할사항이나 반드시 들어가야하는 안내사항이 있을까요?\n\nCc. @최란 님도 한번 확인 부탁드립니다!"
+      },
+      {
+        "author": "박슬기나",
+        "time": "2026년 3월 26일 목요일 오전 5시 38분 15초 UTC",
+        "text": "연재님!! 바꿀거면 아예 바꾸고 와라 이렇게 되어야 합니당\n왜냐면, 재설치로 인한 �가 적용 될 수 있습니다.",
+        "annotations": [
+          "[type,chip_render_type,custom_emoji_metadata]"
+        ]
+      },
+      {
+        "author": "박슬기나",
+        "time": "2026년 3월 26일 목요일 오전 5시 39분 30초 UTC",
+        "text": "아 성연, 민이님 태그주신거군\n금일 민이님이 연차라 @김성연 님이 함께 고민해주세요!"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 3월 26일 목요일 오전 5시 39분 35초 UTC",
+        "text": "반드시 들어가야 하는 내용\n알파리뷰 위젯은 현재 대표디자인 스킨 내에 설치됨\n스킨 변경 / 디자인 수정 작업으로 위젯이 삭제될 경우 알파리뷰 재설치 작업이 진행되어야 함(영업일 기준 3~5일소요)\n반드시 사용을 원하시는 스킨을 지금 스킨으로 설정해야 함\n\n[정리 내용]\n알파리뷰 위젯은 각 스킨별 위젯이 설치됩니다. 따라서 스킨 변경/디자인 수정 작업으로 위젯이 삭제될 경우 알파리뷰 재설치 작업이 진행되어야 정상 노출됩니다.(영업일 기준 3~5일)\n위젯 설치를 원하시는 스킨을 대표디자인으로 변경 후 필수세팅 진행 부탁드립니다.",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 5시 42분 16초 UTC",
+        "text": "title\n위젯을 설치할께요\n아래 항목을 확인해주세요!\n\ndsec\n알파리뷰 위젯은 현재 대표디자인 스킨에 설치되요\n스킨 변경 / 디자인 수정 작업으로 위젯이 삭제될 경우 알파리뷰 재설치 작업이 진행되요 (영업일 기준 3~5일소요)\n반드시 사용을 원하시는 스킨을 지금 스킨으로 설정해주세요",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 5시 42분 21초 UTC",
+        "text": "요정도로 정리하면될까요?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 5시 42분 50초 UTC",
+        "text": "@김성연"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 3월 26일 목요일 오전 5시 43분 56초 UTC",
+        "text": "알파리뷰 위젯은 현재 대표디자인 스킨에 설치돼요\n스킨 변경 / 디자인 수정 작업으로 위젯이 삭제될 경우 알파리뷰 재설치 작업이 필요해요 (영업일 기준 3~5일소요)\n반드시 사용을 원하시는 스킨을 지금 스킨으로 설정해주세요",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 3월 26일 목요일 오전 5시 44분 31초 UTC",
+        "text": "이렇게 정리되면 될 것 같습니다! 재설치 작업이 진행된다는 건 저희가 해줘야 하는 것 같아서 요정도로 수정하면 될 것 같습니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 5시 44분 48초 UTC",
+        "text": "확인 감사합니다! 해당 부분으로 위젯 자동설치 진행시 안내모달이 뜰수있도록 수정하겠습니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 6시 14분 47초 UTC",
+        "text": "해당 모달로 픽스하겠습니다"
+      },
+      {
+        "author": "박슬기나",
+        "time": "2026년 3월 26일 목요일 오전 6시 16분 37초 UTC",
+        "text": "잠시만요!"
+      },
+      {
+        "author": "박슬기나",
+        "time": "2026년 3월 26일 목요일 오전 6시 16분 47초 UTC",
+        "text": "맞춤법 검사중!ㅋㅋㅋ"
+      },
+      {
+        "author": "김성연",
+        "time": "2026년 3월 26일 목요일 오전 6시 17분 0초 UTC",
+        "text": "연재님 맞춤법만 수정해주세요!!\n\n위젯이 설치되기 전에 아래 항목을 확인해 주세요!\n알파리뷰 위젯은 현재 대표디자인 스킨에 설치돼요\n스킨 변경 / 디자인 수정 작업으로 위젯이 삭제될 경우 알파리뷰 재설치 작업이 필요해요(영업일 기준 3~5일 소요)\n반드시 사용을 원하시는 스킨을 지금 스킨으로 설정해 주셔야 합니다.",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 26일 목요일 오전 6시 18분 22초 UTC",
+        "text": "감사합니다..!"
+      },
+      {
+        "author": "Deleted User",
+        "time": "2026년 3월 26일 목요일 오전 6시 26분 6초 UTC",
+        "text": "마춤뻡"
+      }
+    ]
+  },
+  {
+    "topic_id": "-t4O-baUTsw",
+    "title": "@정연재 @송용협 프론트 프로젝트에 claude.md 파일이 있던데, 혹시 프론트분들 클로드 어떤식으로 세팅해서 사용해서 작업해야한다의 룰이 있는지 궁금합니다 🤔 + 클로드에 피그마 mcp 연결은 피그마 공식문서에",
+    "participants": [
+      "suin.park@saladlab.co",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 5,
+    "substantive_count": 5,
+    "date_start": "2026년 3월 30일 월요일 오전 2시 38분 26초 UTC",
+    "date_end": "2026년 3월 30일 월요일 오전 2시 55분 26초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 30일 월요일 오전 2시 38분 26초 UTC",
+        "text": "@정연재 @송용협 프론트 프로젝트에 claude.md 파일이 있던데, 혹시 프론트분들 클로드 어떤식으로 세팅해서 사용해서 작업해야한다의 룰이 있는지 궁금합니다 🤔 + 클로드에 피그마 mcp 연결은 피그마 공식문서에 있는 내용으로 하신건지도 궁금해요!",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 30일 월요일 오전 2시 44분 30초 UTC",
+        "text": "레포지토리 루트에 cladue.md는 정말 기본적인 내용만 담겨져있습니다.\n\n.claude에 기본적인 룰셋이 존재하고있습니다.\n\n그외는 개인적으로 스킬을 로컬클로드에서 사용하고있습니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 30일 월요일 오전 2시 46분 5초 UTC",
+        "text": "mcp 는 공식문서방식으로 진행해주셔도 되고 클로드 내부에 있는 APP을 쓰뎌도될거같기는 합니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 30일 월요일 오전 2시 46분 6초 UTC",
+        "text": "https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/#claude-code",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 3월 30일 월요일 오전 2시 55분 26초 UTC",
+        "text": "아하 확인했습니다! 감사해욥"
+      }
+    ]
+  },
+  {
+    "topic_id": "CzA3gA6oTcY",
+    "title": "@정태성 @최란 관리자페이지에서 롤링위젯 설치가 수월하게 바뀐 것 같은데요! 언제 작업해주신걸까요? 훨씬 직관적으로 바뀐 것 같아 좋아요!",
+    "participants": [
+      "신동혁",
+      "정태성",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 15,
+    "substantive_count": 12,
+    "date_start": "2026년 3월 31일 화요일 오전 4시 26분 5초 UTC",
+    "date_end": "2026년 3월 31일 화요일 오전 6시 59분 12초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "신동혁",
+        "time": "2026년 3월 31일 화요일 오전 4시 26분 5초 UTC",
+        "text": "@정태성 @최란 관리자페이지에서 롤링위젯 설치가 수월하게 바뀐 것 같은데요!\n언제 작업해주신걸까요? 훨씬 직관적으로 바뀐 것 같아 좋아요!"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 31일 화요일 오전 4시 26분 44초 UTC",
+        "text": "굿입니다"
+      },
+      {
+        "author": "신동혁",
+        "time": "2026년 3월 31일 화요일 오전 4시 30분 38초 UTC",
+        "text": "혹시 요거 언제 작업한거에요?"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 31일 화요일 오전 4시 54분 49초 UTC",
+        "text": "좀 예전이긴합니다"
+      },
+      {
+        "author": "신동혁",
+        "time": "2026년 3월 31일 화요일 오전 4시 58분 22초 UTC",
+        "text": "예전이요..?\n\nVIVEVIVE ( 49940 ) / vivevive8 - 1 | 라이브\n\n위 업체와 롤링위젯 접수로 인해 마지막으로 소통한게 3월13일인데, 그 이후인거죠?\n위 업체가 접수할때는 채널 1:1 메시지로 남겨야 했거든요!"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 3월 31일 화요일 오전 5시 31분 57초 UTC",
+        "text": "@신동혁 \n25년???쯤으로 알고 있는데\n@정연재 님 대충 언제쯤인지 기억 하시나요?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 31일 화요일 오전 5시 46분 1초 UTC",
+        "text": "해당 포맷자체는 통합이후라서 25년 4~5월 쯤에 마무리되면서 확인하셨을수 있습니다.\n\n이미지는 최근에 신규위젯 이미지로 변경했습니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 31일 화요일 오전 5시 46분 48초 UTC",
+        "text": "-> 계약구독일떄는 저 모달이 뜨지않고 1:1 문의버튼 이후 채널톡으로 연결됩니다"
+      },
+      {
+        "author": "신동혁",
+        "time": "2026년 3월 31일 화요일 오전 6시 25분 37초 UTC",
+        "text": "아.....계약구독이 아닐때는 저 모달에서 설치요청까지 모두 완료되는건가요? 아니면 이후에도 1:1문의가 열리나요?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 31일 화요일 오전 6시 50분 44초 UTC",
+        "text": "일반 구독일때는 해당 dialog 이후 설치요청이 슈퍼어드민에 생성되서 일반적인 플로우로 진행되는것으로 알고있습니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 31일 화요일 오전 6시 51분 12초 UTC",
+        "text": "@신동혁 계약구독일때만 설치요청이 불가능하게 1:1문의 버튼이 보이게 됩니다"
+      },
+      {
+        "author": "신동혁",
+        "time": "2026년 3월 31일 화요일 오전 6시 57분 23초 UTC",
+        "text": "아하, 그렇군요. 그럼 채널톡을 통해 설치요청을 남기게 되는 경우는 계약구독에만 해당한다고 보면 되는거죠?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 31일 화요일 오전 6시 58분 58초 UTC",
+        "text": "네 아마 거의 대부분이 해당할듯합니다."
+      },
+      {
+        "author": "신동혁",
+        "time": "2026년 3월 31일 화요일 오전 6시 59분 8초 UTC",
+        "text": "넵, 확인했습니다 감사합니다 연재님!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 3월 31일 화요일 오전 6시 59분 12초 UTC",
+        "text": "감사합니다!"
+      }
+    ]
+  },
+  {
+    "topic_id": "oYHfDmTvDDI",
+    "title": "@정태성 님 알파리뷰 작성페이지 정책문서 공유드립니다. 노션 바로가기",
+    "participants": [
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 1,
+    "substantive_count": 1,
+    "date_start": "2026년 4월 8일 수요일 오전 2시 41분 34초 UTC",
+    "date_end": "2026년 4월 8일 수요일 오전 2시 41분 34초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "정연재",
+        "time": "2026년 4월 8일 수요일 오전 2시 41분 34초 UTC",
+        "text": "@정태성 님\n알파리뷰 작성페이지 정책문서 공유드립니다.\n노션 바로가기",
+        "annotations": [
+          "[Link] [object Object]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      }
+    ]
+  },
+  {
+    "topic_id": "DHr36O-t10g",
+    "title": "@임지영 @정태성 @강성민@신동훈 ​@한혜주 @신동혁 제가 재방문 플로팅 버튼 미노출 기간 설정 작업을 진행하고 있는데요, 요기 스레드에서 '재방문 배너'라는 키워드를 사용하시던데, 그런 키워드는 대시보드상에서 확",
+    "participants": [
+      "suin.park@saladlab.co",
+      "신동훈",
+      "정연재",
+      "임지영",
+      "최규백"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 65,
+    "substantive_count": 55,
+    "date_start": "2026년 4월 8일 수요일 오전 2시 41분 41초 UTC",
+    "date_end": "2026년 4월 8일 수요일 오전 5시 6분 36초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 41분 41초 UTC",
+        "text": "@임지영 @정태성 @강성민@신동훈 ​@한혜주 @신동혁 제가 재방문 플로팅 버튼 미노출 기간 설정 작업을 진행하고 있는데요,\n\n요기 스레드에서 '재방문 배너'라는 키워드를 사용하시던데, 그런 키워드는 대시보드상에서 확인이 안됩니다! \n'재방문 플로팅 버튼'을 '재방문 배너'라고도 부르는 걸로 유추되어서 '재방문 플로팅 버튼'이라는 용어로 통칭하겠습니다 🙇‍♀️\n(해당 스레드에 답글 다신 분들 일단 전부 태그걸어두었어요!)\n\n이번에 작업해야하는 대시보드 디자인(이미지 참고)에서도 '플로팅 배너', '재방문 배너'로 혼용되어 있는데, '재방문 플로팅 버튼' or '플로팅 버튼'으로 작업할게요!",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 42분 34초 UTC",
+        "text": "근데 재방문 팝업 vs 재방문 플로팅 버튼이 무슨 차이인지 모르겠어요 .."
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 2시 43분 59초 UTC",
+        "text": "헷갈리긴 하네요\n제가 알기론 버튼과 배너가 다른걸로 아는데 그 연필 모양 아이콘 동그란거가 플로팅 버튼?이고\n배너는 좀 더 크게 리뷰 작성을 유도하는 영역 아닌가요?"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 2시 44분 16초 UTC",
+        "text": "재방문 팝업은 또 머야"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 2시 44분 38초 UTC",
+        "text": "아마 옛날에는 재방문 배너 1종류 밖에 없었는데"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 45분 20초 UTC",
+        "text": "가운데에 있는 모달 -> 재방문 팝업? 재방문 배너?이고\n우측 하단 연필모양 버튼 -> 재방문 플로팅 버튼 이라는 말씀이시져 ??"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 8일 수요일 오전 2시 45분 39초 UTC",
+        "text": "재방문 플로팅 버튼\n-> 디폴트로 홈페이지 우하단에 나오는 연필아이콘의 버튼\n\n재방문 팝업\n-> 리뷰작성건이 있다면, 메인페이지 접근시 팝업되는 배너\n(재방문 플로팅버튼을 클릭해서 팝업시킬수있습니다)"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 2시 45분 41초 UTC",
+        "text": "네 ㅋㅋ 근데 이건  csm분들이 오시면 바로 알려주실듯"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 2시 46분 14초 UTC",
+        "text": "1. 옛날 재방문배너 -> \"팝업\"이 된건데 옛 사람들의 머리에는 그게 남은거고..\n2. 페이지에 박혀서 보여지는 \"배너\"가 있고\n3. \"버튼\"은 플로팅으로 우측 하단 동그라미"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 46분 23초 UTC",
+        "text": "이 설명이 저를 헷갈리게 해요 ... 그럼 가운데 네모난 모달은 1회성으로 노출되고 이후엔 연필 버튼만 뜬 다는 건가 ...."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 8일 수요일 오전 2시 46분 42초 UTC",
+        "text": "재방문 배너라는게\n구매이력이 있을경우 상세페이지에 노출되는 배너를 말씀주시는것같습니다.\n-> 리뷰작성유도 상세배너"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 6초 UTC",
+        "text": "재방문 배너의 이름이 재방문 팝업이 된게 맞습니당"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 9초 UTC",
+        "text": "여기서 세번째 말씀하시는거 맞죠 ?!"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 14초 UTC",
+        "text": "팝업을 끄면 플로팅 버튼이 나와요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 15초 UTC",
+        "text": "연재님께서 말씀해주시는게 .."
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 34초 UTC",
+        "text": "네네 세번째"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 39초 UTC",
+        "text": "연재님이 말씀하신게 세번째"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 46초 UTC",
+        "text": "팝업 -> 가운데에 있는 모달\n이걸 끄면"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 49초 UTC",
+        "text": "아하~"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 47분 56초 UTC",
+        "text": "플로팅 버튼 -> 우측 하단 연필모양 버튼\n이것만 뜬다 ?? 라는거죠 ??"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 48분 3초 UTC",
+        "text": "네네네"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 48분 6초 UTC",
+        "text": "맞아용"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 8일 수요일 오전 2시 48분 35초 UTC",
+        "text": "네 저 버튼도 미노출옵션이 있기는한데, 기본적으로는 노출됩니다."
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 48분 39초 UTC",
+        "text": "그럼 유저 입장에선 흑백 처리된 화면 위에 우측 하단 연필모양 버튼만 계속 뜬다 ????!!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 48분 43초 UTC",
+        "text": "라는 거죠 ??"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 48분 48초 UTC",
+        "text": "심오하네요 .."
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 49분 10초 UTC",
+        "text": "리뷰 작성 유도 기능이 총 3개\n재방문 팝업(구 배너)\n플로팅 버튼\n상품 상세 배너\n\n요렇게 3개가 있고\n상품 상세배너는 상품 상세페이지에서 계속 뜨고 플로팅 버튼은 재방문 팝업을 끄면 나와요",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 49분 14초 UTC",
+        "text": "https://guide.alph.kr/011de49b-7ed5-4295-970a-28a2470e81b7",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 50분 23초 UTC",
+        "text": "흑백 처리 된 화면은 팝업창이 떠야하는거고"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 50분 44초 UTC",
+        "text": "플로팅 버튼은 고객이 쇼핑몰을 탐색하고 있는 상태에서도 계속 보여요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 51분 2초 UTC",
+        "text": "아하 왼쪽 화면 이미지 -> '재방문 팝업' (구 재방문 배너)\n오른쪽 화면 이미지 -> 재방문 팝업 끄고 나서 우측 하단에 '플로팅 버튼'만 뜨고 있는상태"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 51분 6초 UTC",
+        "text": "인거죠 ?"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 51분 9초 UTC",
+        "text": "네네 맞아용!"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 51분 17초 UTC",
+        "text": "팝업을 끄면 음영처리도 사라져요!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 51분 35초 UTC",
+        "text": "아하하 그럼 저는 뭘 n일동안 안 보기 설정을 해야하는거죠 ..? 플로팅 버튼이 맞겠죠 ..?"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 52분 10초 UTC",
+        "text": "아뇨! 재방문  팝업!"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 52분 26초 UTC",
+        "text": "요기 스레드에서 '재방문 배너'라는 키워드를 사용하시던데, 그런 키워드는 대시보드상에서 확인이 안됩니다! \n'재방문 플로팅 버튼'을 '재방문 배너'라고도 부르는 걸로 유추되어서 '재방문 플로팅 버튼'이라는 용어로 통칭하겠습니다\n\n-> 요기서 정리가 잘 못 된 것 같아요",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 52분 41초 UTC",
+        "text": "위젯이 리뉴얼 되는  시점에 재방문 팝업이 된 것 같아요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 52분 55초 UTC",
+        "text": "너무 어려워요 ..."
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 52분 59초 UTC",
+        "text": "꽤나 오랫동안 재방문 배너라고 불러왔어가지구 다들 그 이름이 익숙해서 그렇게 부른 것!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 8일 수요일 오전 2시 53분 7초 UTC",
+        "text": "이전 스레드를 보고와서 정리해봤습니다.\n\n1. 재방문 배너 -> 재방문 팝업을 의미함\n2. 재방문 팝업이 n일 이상 뜨지 않도록 조치가 필요함\n3. 리뷰작성유도 -> 재방문 팝업에는 플로팅 버튼에 대한 옵션만 있고 재방문 팝업에 대한 옵션이 없음\n4. 재방문 팝업자체를 n일간 보여주지 않기 같은 기능이 필요함"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 8일 수요일 오전 2시 53분 22초 UTC",
+        "text": "요렇게 정리되는데 맞을까요"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 53분 26초 UTC",
+        "text": "대시보드에서 팝업은 1회성 노출된다고 설명이 적혀있던데 -> 1회성 노출이 세션 기준이라서(<- 제 뇌피셜)"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 53분 38초 UTC",
+        "text": "미노출 기간을 설정해달라는 요구사항이 나온건가요 ..?"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 53분 52초 UTC",
+        "text": "재방문 배너가 하루에 한번이라서"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 53분 55초 UTC",
+        "text": "매일 들어가면 매일 나와요ㅋㅋ"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 2초 UTC",
+        "text": "아하?"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 6초 UTC",
+        "text": "하루마다 1회성 노출"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 13초 UTC",
+        "text": "끄는게 하루동안 안보기라고 하셨었슴다"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 30초 UTC",
+        "text": "그래서 업체들이 한번끄면 n일동안 안보기를 해두고 싶다 라고 하는 것!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 41초 UTC",
+        "text": "안 끄면 계속 나오고, 끄면 그날 하루 안보기 인 상태라는거죠 지금 ?!"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 51초 UTC",
+        "text": "네넹 맞아용"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 54분 59초 UTC",
+        "text": "근데 꺼도 하루 안보기 그 이상을 하고 싶다"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 2시 55분 7초 UTC",
+        "text": "그럼 사실 1회성 노출도 아니네요 ??"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 2시 55분 31초 UTC",
+        "text": "그쵸! 하루동안 안보기가 아니라 n일 동안 안보기를 하고 싶은거니까!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 3시 8분 57초 UTC",
+        "text": "그렇다면 **  최종정리 **\n1. 재방문 팝업 -> 모달, 구) 재방문 배너\n2. 재방문 플로팅 버튼 -> 연필 버튼\n3. 미노출 기간 설정하고 싶은 것 == 재방문 팝업",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 3시 9분 7초 UTC",
+        "text": "졍님 감사합니다 🙇‍♀️"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 3시 12분 56초 UTC",
+        "text": "AS-IS\n재방문 팝업은 1회성으로 노출하지만,\n재방문 플로팅 버튼은 유저가 리뷰를 작성할때까지 계속 노출돼요.\n\n대시보드에 있는 이 설명도 아래처럼 수정되는게 더 나을 거 같아요! 함 확인해보시고, 이게 더 나을 거 같다구 하시면 요것도 함께 수정 작업하겠습니다 🫡\n\nTO-BE\n재방문 팝업은 매일 첫 접속 시 1회 노출되며, 설정하신 미노출 기간 동안은 나타나지 않습니다. 반면, 재방문 플로팅 버튼은 리뷰 작성이 완료될 때까지 지속적으로 노출됩니다.",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 3시 13분 30초 UTC",
+        "text": "란님이 안계셔서 대신 컨펌 부탁드려요 🙇‍♀️ cc @임지영 @신동훈"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 3시 14분 59초 UTC",
+        "text": "요거 문구 위치도 바뀌어야 할 거같은데  @최규백 님의 도움이 필요합니다 ..!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 8일 수요일 오전 3시 17분 41초 UTC",
+        "text": "https://www.figma.com/design/KCWx9FxkqqR7IDgYXQJg9f/%EB%A6%AC%EB%B7%B0-%EC%9E%91%EC%84%B1-%EC%9C%A0%EB%8F%84?node-id=19039-21291&t=47eV2ZPAjsod1Jef-0",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 4시 30분 20초 UTC",
+        "text": "굿... 의문을 갖고 끝까지 해결해주셔서 감사합니다"
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 4월 8일 수요일 오전 4시 59분 21초 UTC",
+        "text": "@박수인 \n아래 화면처럼 개선했습니다.\n1) 재방문 팝업으로 용어 통일\n2) 제안해주신 첫접속과 미노출 기간 반영\n3) 길어진 내용을 각 주제에 맞게 분산하여 배치 및 문장 단순화 (제목하단, 미노출 기간 드롭다운 옆)\n\nhttps://www.figma.com/design/KCWx9FxkqqR7IDgYXQJg9f/%EB%A6%AC%EB%B7%B0-%EC%9E%91%EC%84%B1-%EC%9C%A0%EB%8F%84?node-id=19164-12262&t=rxKR8Cz3OZ3OWgwF-11"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 4월 8일 수요일 오전 5시 2분 39초 UTC",
+        "text": "@박수인 변경 후 배포하는 일정 안내 부탁드립니다\n@임지영 해당 명칭이나 설명 등이 변경 되는군요"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 4월 8일 수요일 오전 5시 6분 36초 UTC",
+        "text": "기능 명칭이 변경 되었는데, 대시보드는 좀 혼재 되어있었던 것 같습니당 이 기회에 정리 되면 너무 좋을 것 같아요!"
+      }
+    ]
+  },
+  {
+    "topic_id": "NoUv4nPkM0o",
+    "title": "우리 영역인지 확인하려다 마주친 수인님 @박수인",
+    "participants": [
+      "이재호",
+      "정태성",
+      "suin.park@saladlab.co",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 13,
+    "substantive_count": 11,
+    "date_start": "2026년 4월 15일 수요일 오전 8시 6분 40초 UTC",
+    "date_end": "2026년 4월 15일 수요일 오전 8시 21분 31초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "이재호",
+        "time": "2026년 4월 15일 수요일 오전 8시 6분 40초 UTC",
+        "text": "우리 영역인지 확인하려다 마주친 수인님 @박수인"
+      },
+      {
+        "author": "이재호",
+        "time": "2026년 4월 15일 수요일 오전 8시 7분 39초 UTC",
+        "text": "오야니 ( 74998 ) / nasign01 - 1 | 라이브\n주석 때문에 헷갈리네요. \n'REVIEW' 텍스트가 쉐도우돔 안에 우리 영역일까요?"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 4월 15일 수요일 오전 8시 11분 22초 UTC",
+        "text": "@정연재 @송용협 확인부탁드립니닷"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 11분 33초 UTC",
+        "text": "@정연재 님께 한번 더 확인해봤는데, 해당 REVIEW 타이틀은 위젯세트 내에 포함된 게 아니라서 대시보드 상에서 css 처리로 지울 수 있는 영역이 아니라구 합니다!",
+        "annotations": [
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 11분 36초 UTC",
+        "text": "디자인센터에서"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 11분 49초 UTC",
+        "text": "요 영역에 주석 처리해주면돼요!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 13분 32초 UTC",
+        "text": "테크오퍼레이션팀에서 수동설치로 해주면서 설치된 코드이면 \n저희가 지워줄 수는 있는데, \n\n나중에 다시 해당 REVIEW 타이틀을 활성화하고 싶을 때도 저희가 다시 작업해주어야하는 번거로움이 있습니다!",
+        "annotations": [
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 15일 수요일 오전 8시 13분 53초 UTC",
+        "text": "@박수인 님 말씀주신사항과 동일합니다~\n\n다시활성화하려면 CSS 수정보다는 주석처리가 가장 깔끔할듯합니다!"
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 14분 20초 UTC",
+        "text": "                <div style=\"font-size:30px; padding-top: 30px; margin-bottom:20px; text-align:center;\">REVIEW</div>\n\n-> 이걸 주석처리해서\n                <!-- <div style=\"font-size:30px; padding-top: 30px; margin-bottom:20px; text-align:center;\">REVIEW</div> -->",
+        "annotations": [
+          "[format_metadata]",
+          "[format_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 14분 46초 UTC",
+        "text": "앞뒤로 빨간색으로 된 <!-- -->을 넣어주면 주석처리되고, 다시 지우면 주석 해제됩니닷 참고루"
+      },
+      {
+        "author": "이재호",
+        "time": "2026년 4월 15일 수요일 오전 8시 17분 3초 UTC",
+        "text": "오호, 이렇게 가이드까지 주면 감동하겠네용~~ 감쟈해요 ㅎㅎ�",
+        "annotations": [
+          "[type,chip_render_type,custom_emoji_metadata]"
+        ]
+      },
+      {
+        "author": "suin.park@saladlab.co",
+        "time": "2026년 4월 15일 수요일 오전 8시 17분 11초 UTC",
+        "text": "아마 위젯세트 내의 위젯은 지우고, 위젯세트는 살려두라고 업체측에 말씀하신게 -> 위젯 설치 접수하고 작업하는데 시간이 드니까 효율성 측면에서 말씀하신듯한데\n\n제목 지웠다가 다시 나타나게 나중에 작업해주는 것도 저희가 하면 업체측에서는 기다리는 시간이 생기게 되니, 직접 작업 요청 드리는 게 편하실 수도 ..!"
+      },
+      {
+        "author": "이재호",
+        "time": "2026년 4월 15일 수요일 오전 8시 21분 31초 UTC",
+        "text": "예쓰!"
+      }
+    ]
+  },
+  {
+    "topic_id": "226PV4X1TlM",
+    "title": "[무료버전] 260428 스크럼 회의록 전달드립니다. (링크) @김종우 @최규백 @정태성 @최민수 @정연재 cc @신동훈",
+    "participants": [
+      "최란",
+      "최규백",
+      "최민수",
+      "정연재"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 4,
+    "substantive_count": 2,
+    "date_start": "2026년 4월 28일 화요일 오전 5시 56분 21초 UTC",
+    "date_end": "2026년 4월 28일 화요일 오전 6시 1분 30초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": true,
+    "messages": [
+      {
+        "author": "최란",
+        "time": "2026년 4월 28일 화요일 오전 5시 56분 21초 UTC",
+        "text": "[무료버전] 260428 스크럼 회의록 전달드립니다. (링크)\n@김종우 @최규백 @정태성 @최민수 @정연재 cc @신동훈",
+        "annotations": [
+          "[format_metadata]",
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "최규백",
+        "time": "2026년 4월 28일 화요일 오전 5시 56분 55초 UTC",
+        "text": "와 감사합니다!!"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 4월 28일 화요일 오전 6시 0분 42초 UTC",
+        "text": "확인했습니다! 감사합니다."
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 28일 화요일 오전 6시 1분 30초 UTC",
+        "text": "확인하겠습니다!"
+      }
+    ]
+  },
+  {
+    "topic_id": "00RDk26ja4g",
+    "title": "배포 시작합니다!",
+    "participants": [
+      "정태성",
+      "정연재",
+      "최민수",
+      "송용협"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 8,
+    "substantive_count": 7,
+    "date_start": "2026년 4월 29일 수요일 오전 4시 35분 26초 UTC",
+    "date_end": "2026년 4월 29일 수요일 오전 5시 37분 10초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "정태성",
+        "time": "2026년 4월 29일 수요일 오전 4시 35분 26초 UTC",
+        "text": "배포 시작합니다!"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 29일 수요일 오전 5시 4분 44초 UTC",
+        "text": "리뷰 작성페이지 배포 완료되었습니다."
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 4월 29일 수요일 오전 5시 9분 42초 UTC",
+        "text": "@송용협 프론트엔드 배포도 바로 이어서 진행하시는걸까요'?"
+      },
+      {
+        "author": "송용협",
+        "time": "2026년 4월 29일 수요일 오전 5시 11분 21초 UTC",
+        "text": "지금 PR 리뷰 관련해서 간단한 수정이 진행 중이라, 완료되면 말씀드리겠습니다.\n\n백엔드 배포 대기중이신가요?"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 4월 29일 수요일 오전 5시 13분 26초 UTC",
+        "text": "백엔드는 다 배포됐습니다"
+      },
+      {
+        "author": "송용협",
+        "time": "2026년 4월 29일 수요일 오전 5시 34분 3초 UTC",
+        "text": "Core-Front 배포 완료입니다 !\n배포가 늦어져서 죄송합니다.\n\ncc. @박수인 @최민수 @정태성"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 29일 수요일 오전 5시 36분 57초 UTC",
+        "text": "프로덕션 테스트용 라이브 샵\n알파리뷰-연재몰 ( 35281 ) / alphareviewmall - 5 | 해지완료"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 4월 29일 수요일 오전 5시 37분 10초 UTC",
+        "text": "현재 알파리뷰 라이브 사용중입니다.\n\n@박수인"
+      }
+    ]
+  },
+  {
+    "topic_id": "g9A6kFLBVEk",
+    "title": "카페24 프로 리뷰앱이래요 이놈들이 https://docs.channel.io/cafe24pro/ko/articles/%EB%A6%AC%EB%B7%B0%EC%95%B1-%EC%9A%B4%EC%98%81-%EC%95%",
+    "participants": [
+      "권효은",
+      "정태성",
+      "최란",
+      "최민수",
+      "정연재",
+      "신동훈",
+      "임지영"
+    ],
+    "yeonjae_participated": true,
+    "message_count": 19,
+    "substantive_count": 13,
+    "date_start": "2026년 5월 14일 목요일 오전 8시 36분 9초 UTC",
+    "date_end": "2026년 5월 14일 목요일 오전 9시 15분 3초 UTC",
+    "has_troubleshooting": false,
+    "has_important_keyword": false,
+    "messages": [
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 8시 36분 9초 UTC",
+        "text": "카페24 프로 리뷰앱이래요 이놈들이\nhttps://docs.channel.io/cafe24pro/ko/articles/%EB%A6%AC%EB%B7%B0%EC%95%B1-%EC%9A%B4%EC%98%81-%EC%95%88%EB%82%B4-398157fb",
+        "annotations": [
+          "[Link] [object Object]"
+        ]
+      },
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 8시 36분 41초 UTC",
+        "text": "..?"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 5월 14일 목요일 오전 8시 41분 2초 UTC",
+        "text": "엥"
+      },
+      {
+        "author": "최란",
+        "time": "2026년 5월 14일 목요일 오전 8시 41분 7초 UTC",
+        "text": "무료버전을 이번 분기에 진행하길 잘했다는 생각이 듭니다..!"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 5월 14일 목요일 오전 8시 43분 28초 UTC",
+        "text": "....???"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 5월 14일 목요일 오전 8시 45분 32초 UTC",
+        "text": "언제 나온 내용인지는 모르시쥬?"
+      },
+      {
+        "author": "정연재",
+        "time": "2026년 5월 14일 목요일 오전 8시 46분 12초 UTC",
+        "text": "작성페이지가 매우 괘씸하네요"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 5월 14일 목요일 오전 8시 54분 19초 UTC",
+        "text": "인생은 실전이다 때가 됐을 뿐 넘 걱정하지 마세요 채널톡도 만든다고 들었어요ㅋㅋ"
+      },
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 8시 57분 4초 UTC",
+        "text": "자동설치 어케 하는지 궁금하네요 ㅋㅎ"
+      },
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 8시 57분 50초 UTC",
+        "text": "이건 모르겠어요 ㅠ"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 5월 14일 목요일 오전 8시 58분 29초 UTC",
+        "text": "상위 디자인스킨 지원 + 프로 디자인 지원일듯?"
+      },
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 8시 59분 11초 UTC",
+        "text": "라고 합니닷"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 5월 14일 목요일 오전 8시 59분 52초 UTC",
+        "text": "ㅋㅋㅋ완전 개발자네 저걸 어케알아"
+      },
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 9시 0분 43초 UTC",
+        "text": "클로드가 알려줬어요"
+      },
+      {
+        "author": "최민수",
+        "time": "2026년 5월 14일 목요일 오전 9시 0분 45초 UTC",
+        "text": "ㅋㅋㅋㅋㅋㅋ 그냥 네트워크 내용을 분석해버리네요"
+      },
+      {
+        "author": "신동훈",
+        "time": "2026년 5월 14일 목요일 오전 9시 1분 48초 UTC",
+        "text": "어쨌든 저희가 더욱 강력한 해자를 만들지 않으면 안된다는 생각이 드네요 언능 캔버스에서 발전해서 위젯까지 샤샤삭 설치해버리죠ㅋㅋ"
+      },
+      {
+        "author": "권효은",
+        "time": "2026년 5월 14일 목요일 오전 9시 2분 4초 UTC",
+        "text": "화이또!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      },
+      {
+        "author": "정태성",
+        "time": "2026년 5월 14일 목요일 오전 9시 3분 29초 UTC",
+        "text": "카페24 pro 죽이기"
+      },
+      {
+        "author": "임지영",
+        "time": "2026년 5월 14일 목요일 오전 9시 15분 3초 UTC",
+        "text": "어쩐지..리뷰 개수 모듈 박아두더라니..."
+      }
+    ]
+  }
+]

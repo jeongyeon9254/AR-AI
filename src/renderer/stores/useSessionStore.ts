@@ -4,7 +4,8 @@ export const AGENT_TYPES = [
   { id: 'fe-developer', label: 'FE Developer', icon: '🖥' },
   { id: 'be-developer', label: 'BE Developer', icon: '⚙' },
   { id: 'issue-collector', label: 'Issue Manager', icon: '📋' },
-  { id: 'policy-expert', label: 'Policy Manager', icon: '📜' },
+  { id: 'policy-expert', label: 'Policy Expert', icon: '📜' },
+  { id: 'policy-manager', label: 'Policy Manager', icon: '🧭' },
   { id: 'qa-expert', label: 'QA Manager', icon: '🧪' },
   { id: 'po', label: 'Project Owner', icon: '📊' }
 ] as const
@@ -48,7 +49,8 @@ interface SessionState {
   init: () => Promise<void>
   initProject: (projectId: string) => Promise<void>
   selectAgent: (agentType: string, projectId?: string) => Promise<void>
-  openGlobalIssueManager: () => Promise<void>
+  openGlobalReportManager: () => Promise<void>
+  openGlobalPolicyManager: () => Promise<void>
   sendMessage: (content: string, attachments?: Array<{ name: string; data: string; mediaType: string }>) => void
   clearChat: () => Promise<void>
   abortAgent: () => Promise<void>
@@ -106,8 +108,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 
-  // 프로젝트와 무관한 글로벌 이슈매니저 세션 열기 (Google Chat 이슈 트래킹 전용)
-  openGlobalIssueManager: async () => {
+  // 프로젝트와 무관한 글로벌 리포트 매니저 세션 열기 (Google Chat 이슈 트래킹 전용)
+  openGlobalReportManager: async () => {
     // 1. 기존 글로벌 issue-collector 세션 찾기
     const sessions = await window.electronAPI.listSessions()
     let session = sessions.find((s: Session) =>
@@ -134,6 +136,35 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }))
 
     // 3. 메시지 로드
+    const result = await window.electronAPI.getSession(sessionId)
+    if (get().activeSessionId !== sessionId) return
+    set({ messages: result?.messages || [] })
+  },
+
+  // 프로젝트와 무관한 글로벌 폴리시 매니저 세션 열기 (정책·이슈 Q&A 전용)
+  openGlobalPolicyManager: async () => {
+    const sessions = await window.electronAPI.listSessions()
+    let session = sessions.find((s: Session) =>
+      s.agentType === 'policy-manager' && (!s.projectId || s.projectId === '')
+    )
+    if (!session) {
+      session = await window.electronAPI.createSession('policy-manager')
+    }
+    if (!session) return
+
+    const sessionId = session.id
+    set((state) => ({
+      agentSessions: { ...state.agentSessions, ['policy-manager']: sessionId },
+      sessions: state.sessions.some((s) => s.id === sessionId)
+        ? state.sessions
+        : [...state.sessions, session as Session],
+      activeAgentType: 'policy-manager',
+      activeProjectId: null,
+      activeSessionId: sessionId,
+      messages: [],
+      streamingMessageId: null
+    }))
+
     const result = await window.electronAPI.getSession(sessionId)
     if (get().activeSessionId !== sessionId) return
     set({ messages: result?.messages || [] })

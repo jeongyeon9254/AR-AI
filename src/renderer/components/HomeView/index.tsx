@@ -6,7 +6,7 @@ import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
 export function HomeView(): JSX.Element {
   const { projects, loadProjects, createProject, deleteProject, loadProjectTodos, projectTodos, updateTodoKanban, deleteTodo } = useProjectStore()
   const { setViewMode } = useUIStore()
-  const { initProject, selectAgent, loadingAgents, agentSessions, openGlobalIssueManager } = useSessionStore()
+  const { initProject, selectAgent, loadingAgents, agentSessions, openGlobalReportManager, openGlobalPolicyManager } = useSessionStore()
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
   const [creating, setCreating] = useState(false)
@@ -72,7 +72,7 @@ export function HomeView(): JSX.Element {
         </h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={async () => { await openGlobalIssueManager(); setViewMode('chat') }}
+            onClick={async () => { await openGlobalReportManager(); setViewMode('chat') }}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all"
             style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)', background: 'transparent' }}
             onMouseEnter={(e) => {
@@ -85,10 +85,29 @@ export function HomeView(): JSX.Element {
               e.currentTarget.style.borderColor = 'var(--border-color)'
               e.currentTarget.style.color = 'var(--text-secondary)'
             }}
-            title="Google Chat 이슈 트래킹 - 프로젝트와 무관하게 전체 이슈 관리"
+            title="Google Chat 리포트 트래킹 - 프로젝트와 무관하게 전체 리포트 관리"
           >
             <span style={{ fontSize: '13px' }}>📋</span>
-            <span>이슈 매니저</span>
+            <span>리포트 매니저</span>
+          </button>
+          <button
+            onClick={async () => { await openGlobalPolicyManager(); setViewMode('chat') }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+            style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)', background: 'transparent' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bg-elevated)'
+              e.currentTarget.style.borderColor = 'var(--border-strong)'
+              e.currentTarget.style.color = 'var(--text-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'var(--border-color)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+            }}
+            title="정책·이슈 Q&A - 정책 문서, 채팅 트러블슈팅, 코드베이스를 함께 참고하여 답변"
+          >
+            <span style={{ fontSize: '13px' }}>🧭</span>
+            <span>폴리시 매니저</span>
           </button>
           <button
             onClick={() => setViewMode('settings')}

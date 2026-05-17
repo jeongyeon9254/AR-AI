@@ -1,6 +1,55 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import mermaid from 'mermaid'
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  securityLevel: 'loose',
+  fontFamily: 'inherit'
+})
+
+function MermaidDiagram({ code }: { code: string }): JSX.Element {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const id = `mmd-${Math.random().toString(36).slice(2)}`
+    mermaid
+      .render(id, code)
+      .then(({ svg }) => {
+        if (cancelled || !containerRef.current) return
+        containerRef.current.innerHTML = svg
+        setError(null)
+      })
+      .catch((err: Error) => {
+        if (cancelled) return
+        setError(err.message || 'mermaid render error')
+      })
+    return () => { cancelled = true }
+  }, [code])
+
+  if (error) {
+    return (
+      <pre
+        className="my-3 p-3 rounded-lg text-xs overflow-x-auto"
+        style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}
+      >
+        {`// mermaid 렌더 실패: ${error}\n${code}`}
+      </pre>
+    )
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="my-3 p-3 rounded-lg overflow-x-auto"
+      style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-color)' }}
+    />
+  )
+}
 import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
 import type { ChatMessage, FileAttachmentInfo } from '../../stores/useSessionStore'
 import { useUIStore } from '../../stores/useUIStore'
@@ -174,11 +223,83 @@ function DateDivider({ label }: { label: string }): JSX.Element {
   )
 }
 
+type ChoiceBlock = { question: string; options: string[] }
+
+// 어시스턴트 응답의 <choices question="..."> 블록을 파싱.
+// 스트리밍 중 닫히지 않은 태그는 표시에서 제거.
+function parseChoiceBlocks(content: string): { clean: string; choices: ChoiceBlock[] } {
+  const lastOpen = content.lastIndexOf('<choices')
+  const lastClose = content.lastIndexOf('</choices>')
+  let buf = lastOpen > lastClose ? content.slice(0, lastOpen) : content
+
+  const blocks: ChoiceBlock[] = []
+  buf = buf.replace(
+    /<choices\s+question="([^"]*)"\s*>([\s\S]*?)<\/choices>/g,
+    (_full, q, body: string) => {
+      const options = body
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.startsWith('-'))
+        .map((l) => l.replace(/^-\s*/, '').trim())
+        .filter(Boolean)
+      if (options.length > 0) blocks.push({ question: q, options })
+      return ''
+    }
+  )
+  return { clean: buf.trim(), choices: blocks }
+}
+
+function ChoiceButtons({ block }: { block: ChoiceBlock }): JSX.Element {
+  const sendMessage = useSessionStore((s) => s.sendMessage)
+  const [picked, setPicked] = useState<string | null>(null)
+  return (
+    <div className="mt-3">
+      {block.question && (
+        <div
+          className="text-xs mb-2 font-medium"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {block.question}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {block.options.map((opt) => {
+          const isPicked = picked === opt
+          const disabled = picked !== null
+          return (
+            <button
+              key={opt}
+              disabled={disabled}
+              onClick={() => {
+                setPicked(opt)
+                sendMessage(opt)
+              }}
+              className="text-xs px-3 py-2 rounded-lg transition-all"
+              style={{
+                background: isPicked ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                color: isPicked ? 'var(--accent)' : 'var(--text-primary)',
+                border: `1px solid ${isPicked ? 'rgba(167,139,250,0.4)' : 'var(--border-color)'}`,
+                cursor: disabled ? 'default' : 'pointer',
+                opacity: disabled && !isPicked ? 0.5 : 1
+              }}
+            >
+              {opt}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
   msg: ChatMessage
   agentIcon?: string
   showDate: boolean
 }): JSX.Element {
+  const parsed = msg.role === 'assistant'
+    ? parseChoiceBlocks(msg.content)
+    : { clean: msg.content, choices: [] as ChoiceBlock[] }
   return (
     <div>
       {showDate && <DateDivider label={formatDateLabel(msg.createdAt)} />}
@@ -210,9 +331,19 @@ const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
                     >
                       {children}
                     </a>
-                  )
+                  ),
+                  code: ({ className, children, ...props }) => {
+                    const match = /language-(\w+)/.exec(className || '')
+                    if (match?.[1] === 'mermaid') {
+                      return <MermaidDiagram code={String(children).replace(/\n$/, '')} />
+                    }
+                    return <code className={className} {...props}>{children}</code>
+                  }
                 }}
-              >{msg.content}</ReactMarkdown>
+              >{parsed.clean}</ReactMarkdown>
+              {parsed.choices.map((block, i) => (
+                <ChoiceButtons key={i} block={block} />
+              ))}
             </div>
           </div>
         )}
@@ -484,11 +615,11 @@ export function ChatPanel(): JSX.Element {
             </>
           )}
 
-          {/* 에이전트 탭 — 프로젝트 모드: 5개 에이전트, 글로벌 이슈매니저 모드: issue-collector만 */}
+          {/* 에이전트 탭 — 프로젝트 모드: 5개 에이전트, 글로벌 모드: 활성 에이전트만 (issue-collector 또는 policy-manager) */}
           <div className="flex items-center gap-0.5 overflow-x-auto">
             {AGENT_TYPES.filter((a) => activeProjectId
               ? ['fe-developer', 'be-developer', 'qa-expert', 'po', 'issue-collector'].includes(a.id)
-              : a.id === 'issue-collector'
+              : a.id === activeAgentType
             ).map((agent) => (
               <button
                 key={agent.id}
