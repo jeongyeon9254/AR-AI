@@ -10,19 +10,40 @@ mermaid.initialize({
   fontFamily: 'inherit'
 })
 
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+function getSvgString(svgEl: SVGSVGElement): string {
+  const cloned = svgEl.cloneNode(true) as SVGSVGElement
+  if (!cloned.getAttribute('xmlns')) cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  if (!cloned.getAttribute('xmlns:xlink')) cloned.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+  return new XMLSerializer().serializeToString(cloned)
+}
+
 function MermaidDiagram({ code }: { code: string }): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     const id = `mmd-${Math.random().toString(36).slice(2)}`
+    setReady(false)
     mermaid
       .render(id, code)
       .then(({ svg }) => {
         if (cancelled || !containerRef.current) return
         containerRef.current.innerHTML = svg
         setError(null)
+        setReady(true)
       })
       .catch((err: Error) => {
         if (cancelled) return
@@ -30,6 +51,46 @@ function MermaidDiagram({ code }: { code: string }): JSX.Element {
       })
     return () => { cancelled = true }
   }, [code])
+
+  const handleExportSvg = useCallback(() => {
+    const svgEl = containerRef.current?.querySelector('svg') as SVGSVGElement | null
+    if (!svgEl) return
+    const svgString = getSvgString(svgEl)
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+    downloadBlob(blob, `diagram-${Date.now()}.svg`)
+  }, [])
+
+  const handleExportPng = useCallback(() => {
+    const svgEl = containerRef.current?.querySelector('svg') as SVGSVGElement | null
+    if (!svgEl) return
+    const svgString = getSvgString(svgEl)
+    const bbox = svgEl.getBoundingClientRect()
+    const width = Math.max(1, Math.ceil(bbox.width))
+    const height = Math.max(1, Math.ceil(bbox.height))
+    const scale = 2
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = width * scale
+      canvas.height = height * scale
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        URL.revokeObjectURL(url)
+        return
+      }
+      ctx.scale(scale, scale)
+      ctx.drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(url)
+      canvas.toBlob((blob) => {
+        if (!blob) return
+        downloadBlob(blob, `diagram-${Date.now()}.png`)
+      }, 'image/png')
+    }
+    img.onerror = () => URL.revokeObjectURL(url)
+    img.src = url
+  }, [])
 
   if (error) {
     return (
@@ -43,11 +104,38 @@ function MermaidDiagram({ code }: { code: string }): JSX.Element {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="my-3 p-3 rounded-lg overflow-x-auto"
-      style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-color)' }}
-    />
+    <div className="relative group my-3">
+      <div
+        ref={containerRef}
+        className="p-3 rounded-lg overflow-x-auto"
+        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-color)' }}
+      />
+      {ready && (
+        <div
+          className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ pointerEvents: 'auto' }}
+        >
+          <button
+            type="button"
+            onClick={handleExportSvg}
+            className="px-2 py-1 text-[10px] rounded font-medium"
+            style={{ background: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+            title="SVG로 저장"
+          >
+            SVG
+          </button>
+          <button
+            type="button"
+            onClick={handleExportPng}
+            className="px-2 py-1 text-[10px] rounded font-medium"
+            style={{ background: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+            title="PNG로 저장 (2x)"
+          >
+            PNG
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 import { useSessionStore, AGENT_TYPES } from '../../stores/useSessionStore'
@@ -224,6 +312,7 @@ function DateDivider({ label }: { label: string }): JSX.Element {
 }
 
 type ChoiceBlock = { question: string; options: string[] }
+type RelatedBlock = { items: string[] }
 
 // 어시스턴트 응답의 <choices question="..."> 블록을 파싱.
 // 스트리밍 중 닫히지 않은 태그는 표시에서 제거.
@@ -247,6 +336,29 @@ function parseChoiceBlocks(content: string): { clean: string; choices: ChoiceBlo
     }
   )
   return { clean: buf.trim(), choices: blocks }
+}
+
+// 어시스턴트 응답의 <related> 블록을 파싱 (후속 질문 제안).
+function parseRelatedBlock(content: string): { clean: string; related: RelatedBlock | null } {
+  const lastOpen = content.lastIndexOf('<related')
+  const lastClose = content.lastIndexOf('</related>')
+  let buf = lastOpen > lastClose ? content.slice(0, lastOpen) : content
+
+  let related: RelatedBlock | null = null
+  buf = buf.replace(
+    /<related\s*>([\s\S]*?)<\/related>/g,
+    (_full, body: string) => {
+      const items = body
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.startsWith('-'))
+        .map((l) => l.replace(/^-\s*/, '').trim())
+        .filter(Boolean)
+      if (items.length > 0) related = { items }
+      return ''
+    }
+  )
+  return { clean: buf.trimEnd(), related }
 }
 
 function ChoiceButtons({ block }: { block: ChoiceBlock }): JSX.Element {
@@ -292,14 +404,60 @@ function ChoiceButtons({ block }: { block: ChoiceBlock }): JSX.Element {
   )
 }
 
+function RelatedQuestions({ block }: { block: RelatedBlock }): JSX.Element {
+  const sendMessage = useSessionStore((s) => s.sendMessage)
+  const [picked, setPicked] = useState<string | null>(null)
+  return (
+    <div className="mt-4 pt-3" style={{ borderTop: '1px dashed var(--border-color)' }}>
+      <div
+        className="text-[11px] mb-2 font-medium flex items-center gap-1.5"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        <span>💡</span>
+        <span>관련해서 더 궁금하신가요?</span>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {block.items.map((q) => {
+          const isPicked = picked === q
+          const disabled = picked !== null
+          return (
+            <button
+              key={q}
+              disabled={disabled}
+              onClick={() => {
+                setPicked(q)
+                sendMessage(q)
+              }}
+              className="text-xs px-3 py-2 rounded-lg text-left transition-all"
+              style={{
+                background: isPicked ? 'var(--accent-dim)' : 'transparent',
+                color: isPicked ? 'var(--accent)' : 'var(--text-secondary)',
+                border: `1px solid ${isPicked ? 'rgba(167,139,250,0.4)' : 'var(--border-color)'}`,
+                cursor: disabled ? 'default' : 'pointer',
+                opacity: disabled && !isPicked ? 0.5 : 1
+              }}
+            >
+              {q}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
   msg: ChatMessage
   agentIcon?: string
   showDate: boolean
 }): JSX.Element {
-  const parsed = msg.role === 'assistant'
+  const parsedChoices = msg.role === 'assistant'
     ? parseChoiceBlocks(msg.content)
     : { clean: msg.content, choices: [] as ChoiceBlock[] }
+  const parsedRelated = msg.role === 'assistant'
+    ? parseRelatedBlock(parsedChoices.clean)
+    : { clean: parsedChoices.clean, related: null as RelatedBlock | null }
+  const parsed = { clean: parsedRelated.clean, choices: parsedChoices.choices, related: parsedRelated.related }
   return (
     <div>
       {showDate && <DateDivider label={formatDateLabel(msg.createdAt)} />}
@@ -344,6 +502,7 @@ const MessageItem = memo(function MessageItem({ msg, agentIcon, showDate }: {
               {parsed.choices.map((block, i) => (
                 <ChoiceButtons key={i} block={block} />
               ))}
+              {parsed.related && <RelatedQuestions block={parsed.related} />}
             </div>
           </div>
         )}
