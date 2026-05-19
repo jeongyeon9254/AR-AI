@@ -6,7 +6,7 @@ import { promisify } from 'util'
 
 const execAsync = promisify(exec)
 import { app } from 'electron'
-import { AGENT_DEFINITIONS, ORCHESTRATOR_SYSTEM_PROMPT, SUB_AGENTS } from './definitions'
+import { AGENT_DEFINITIONS, ORCHESTRATOR_SYSTEM_PROMPT, SCOPE_GUARDRAIL, SUB_AGENTS } from './definitions'
 import { getSettings, syncSkillFilesAsync } from '../config'
 import { getContextBoard } from '../context-board'
 import { SessionManager, type KanbanStatus } from '../sessions'
@@ -490,10 +490,10 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
     : ''
 
   if (isOrchestrator) {
-    queryOptions.systemPrompt = ORCHESTRATOR_SYSTEM_PROMPT + groupContext + sharedContext + todoContext + todoInstruction
+    queryOptions.systemPrompt = ORCHESTRATOR_SYSTEM_PROMPT + SCOPE_GUARDRAIL + groupContext + sharedContext + todoContext + todoInstruction
     queryOptions.agents = AGENT_DEFINITIONS
   } else if (agentDef) {
-    queryOptions.systemPrompt = agentDef.prompt + worktreeContext + mcpEnvironmentContext + skillContext + groupContext + sharedContext + todoContext + todoInstruction
+    queryOptions.systemPrompt = agentDef.prompt + SCOPE_GUARDRAIL + worktreeContext + mcpEnvironmentContext + skillContext + groupContext + sharedContext + todoContext + todoInstruction
     // MCP 서버가 할당된 경우 allowedTools를 설정하지 않음 (MCP 도구가 mcp__서버명__도구명 패턴이라 화이트리스트로 차단됨)
     // MCP가 없으면 기존대로 allowedTools로 제한
     if (Object.keys(mcpServersConfig).length > 0) {
@@ -515,7 +515,7 @@ ${mcpKeys.map((name) => `- ${name}`).join('\n')}
           ...agent,
           ...subAgentTools,
           // 서브에이전트에는 스킬 이름 목록만 전달 (토큰 절약)
-          prompt: agent.prompt + subAgentSkillContext,
+          prompt: agent.prompt + SCOPE_GUARDRAIL + subAgentSkillContext,
           // MCP 서버를 서브에이전트에도 전파 (SDK는 자동 상속하지 않음)
           // AgentMcpServerSpec[] = Array<string | Record<string, config>>
           ...(mcpSpec ? { mcpServers: Object.keys(mcpSpec).map((n) => ({ [n]: mcpSpec[n] })) } : {})
