@@ -907,7 +907,7 @@ export function ChatPanel(): JSX.Element {
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-5 py-8 space-y-7">
+        <div className="max-w-6xl mx-auto px-5 py-8 space-y-7">
           {messages.length === 0 && (
             <div className="text-center py-24">
               <div
@@ -986,7 +986,7 @@ export function ChatPanel(): JSX.Element {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div
             className="relative overflow-hidden transition-all"
             style={{
