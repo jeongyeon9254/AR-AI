@@ -21,10 +21,20 @@ function downloadBlob(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
+const EXPORT_BG = '#0b0b0c'
+
 function getSvgString(svgEl: SVGSVGElement): string {
   const cloned = svgEl.cloneNode(true) as SVGSVGElement
   if (!cloned.getAttribute('xmlns')) cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
   if (!cloned.getAttribute('xmlns:xlink')) cloned.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+  cloned.style.backgroundColor = EXPORT_BG
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+  bgRect.setAttribute('x', '0')
+  bgRect.setAttribute('y', '0')
+  bgRect.setAttribute('width', '100%')
+  bgRect.setAttribute('height', '100%')
+  bgRect.setAttribute('fill', EXPORT_BG)
+  cloned.insertBefore(bgRect, cloned.firstChild)
   return new XMLSerializer().serializeToString(cloned)
 }
 
@@ -80,6 +90,8 @@ function MermaidDiagram({ code }: { code: string }): JSX.Element {
         URL.revokeObjectURL(url)
         return
       }
+      ctx.fillStyle = EXPORT_BG
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
       ctx.scale(scale, scale)
       ctx.drawImage(img, 0, 0, width, height)
       URL.revokeObjectURL(url)
